@@ -7,7 +7,7 @@
             <div class=" flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4"
                 dir="rtl">
                 <div class="mb-3 w-100" dir="rtl">
-                    <h2 class="text-end">تخصیص‌ها</h2>
+                    <h2 class="text-end">لیست تخصیص‌ها</h2>
                 </div>
 
                 <div class="d-flex flex-column flex-md-row gap-2">
