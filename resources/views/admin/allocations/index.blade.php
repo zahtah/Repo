@@ -13,7 +13,7 @@
                 <div class="d-flex flex-column flex-md-row gap-2">
                     <a href="{{ route('allocations.create') }}" class="btn btn-success">ثبت جدید</a>
 
-                    <a href="{{ route('allocations.export') }}" class="btn btn-outline-primary"> خروجی اکسل </a>
+                    <a href="{{ route('allocations.export') }}" class="btn btn-outline-primary"> خروجی Excel </a>
 
                     <!-- دکمه باز کردن modal -->
                     <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importModal">

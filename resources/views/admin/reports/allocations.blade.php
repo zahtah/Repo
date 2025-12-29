@@ -85,21 +85,38 @@
                                 <th>نام سند</th>
                                 <th>کد محدوده مطالعاتی</th>
                                 <th>گروه تخصیص</th>
-                                <th>سقف تخصیص ابلاغی (لیتر)</th>
-                                <th>هزینه (جمع حجم مصوب به لیتر)</th>
-                                <th>حجم باقی مانده (لیتر)</th>
+                                <th>تعداد متقاضیان</th>
+                                <th>سقف تخصیص ابلاغی (مترمکعب در سال)</th>
+                                <th>هزینه (جمع حجم مصوب به مترمکعب در سال)</th>
+                                <th>حجم باقی مانده (مترمکعب در سال)</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($rows as $r)
+                            @foreach($perFileRows as $r)
                                 <tr>
                                     <td>{{ $r->file_name }}</td>
-                                    <td>{{ $r->code ?? 'همه' }}</td>
+                                    <td>{{ $r->code }}</td>
                                     <td>{{ $r->Takhsis_group }}</td>
+                                    <td>{{ $r->applicants_count }}</td>
                                     <td>{{ number_format($r->total_volume * 1000) }}</td>
                                     <td>{{ number_format($r->cost * 1000) }}</td>
                                     <td>{{ number_format($r->remaining * 1000) }}</td>
                                 </tr>
+                            @endforeach
+
+                            
+                            @forelse($rows as $r)
+                               {{-- سطر جمع کل --}}
+                            @if($grandTotal)
+                                <tr class="table-warning fw-bold">
+                                    <td colspan="3">جمع کل همه سندها</td>
+                                    <td>{{ $grandApplicants }}</td>
+                                    <td>{{ number_format($grandTotal->total_volume * 1000) }}</td>
+                                    <td>{{ number_format($grandTotal->cost * 1000) }}</td>
+                                    <td>{{ number_format($grandTotal->remaining * 1000) }}</td>
+                                </tr>
+                                
+                            @endif
                             @empty
                                 <tr>
                                     <td colspan="6" class="text-center">رکوردی برای نمایش وجود ندارد.</td>

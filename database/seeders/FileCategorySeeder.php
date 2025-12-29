@@ -49,7 +49,7 @@ class FileCategorySeeder extends Seeder
         $surface2 = FileCategory::create(['name' => 'پساب']);
         FileCategory::insert([
             ['name' => 'مهدیشهر', 'parent_id' => $surface2->id],
-            ['name' => 'شمال', 'parent_id' => $surface2->id],
+            ['name' => 'سمنان', 'parent_id' => $surface2->id],
             ['name' => 'سرخه', 'parent_id' => $surface2->id],
             ['name' => 'دامغان', 'parent_id' => $surface2->id],
             ['name' => 'شاهرود1', 'parent_id' => $surface2->id],

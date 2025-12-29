@@ -42,6 +42,19 @@
                         </select>
                     </div>
 
+                     {{-- کد محدوده --}}
+                    <div class="col-md-2">
+                        <label class="form-label">کد محدوده</label>
+                        <select name="code" id="field_code" class="form-control text-end">
+                            <option value="">انتخاب کنید</option>
+                            @foreach ($codeOptions as $option)
+                                <option value="{{ $option }}" {{ old('code') == $option ? 'selected' : '' }}>
+                                    {{ $option }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+
                     {{-- شهرستان --}}
                     <div class="col-md-2">
                         <label class="form-label">شهرستان</label>
@@ -69,19 +82,7 @@
                         <input type="hidden" name="erja" id="erja" value="{{ old('erja') }}">
                     </div>
 
-                    {{-- کد محدوده --}}
-                    {{-- کد محدوده --}}
-                    <div class="col-md-2">
-                        <label class="form-label">کد محدوده</label>
-                        <select name="code" id="field_code" class="form-control text-end">
-                            <option value="">انتخاب کنید</option>
-                            @foreach ($codeOptions as $option)
-                                <option value="{{ $option }}" {{ old('code') == $option ? 'selected' : '' }}>
-                                    {{ $option }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
+                   
 
 
                     {{-- نوع منطقه --}}

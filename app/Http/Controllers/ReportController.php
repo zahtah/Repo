@@ -165,16 +165,99 @@ if (!empty($takhsis) && !in_array('all', $takhsis)) {
     $rows = DB::table(DB::raw("({$subQuery->toSql()}) AS sub"))
         ->mergeBindings($subQuery->getQuery())
         ->select(
-    DB::raw("'" . $fileNameLabel . "' AS file_name"),
-    DB::raw("'" . $codeLabel . "' AS code"),
-    DB::raw("'" . $takhsisLabel . "' AS Takhsis_group"),
-    DB::raw('SUM(sub.t_mosavvab) AS total_volume'),
-    DB::raw('ROUND(SUM(sub.sum_v_m), 2) AS cost'),
-    DB::raw('ROUND(SUM(sub.t_mosavvab) - SUM(sub.sum_v_m), 2) AS remaining')
-)
+        DB::raw("'" . $fileNameLabel . "' AS file_name"),
+        DB::raw("'" . $codeLabel . "' AS code"),
+        DB::raw("'" . $takhsisLabel . "' AS Takhsis_group"),
+        DB::raw('SUM(sub.t_mosavvab) AS total_volume'),
+        DB::raw('ROUND(SUM(sub.sum_v_m), 2) AS cost'),
+        DB::raw('ROUND(SUM(sub.t_mosavvab) - SUM(sub.sum_v_m), 2) AS remaining')
+    )
 
         ->paginate(25)
         ->appends($request->query());
+
+
+     // =============================
+    // محاسبه تعداد متقاضیان
+    // =============================
+    $applicantsPerFile = Allocation::query()
+    ->when(!empty($codes) && !in_array('all', $codes),
+        fn($q) => $q->whereIn('code', $codes)
+    )
+    ->when(!empty($takhsis) && !in_array('all', $takhsis),
+        fn($q) => $q->whereIn('Takhsis_group', $takhsis)
+    )
+    ->when(!empty($fileCategoryIds),
+        fn($q) => $q->whereIn('file_category_id', $fileCategoryIds)
+    )
+    ->select(
+        'file_category_id',
+        'code',
+        'Takhsis_group',
+        DB::raw('COUNT(DISTINCT kelace) AS applicants_count')
+    )
+    ->groupBy('file_category_id', 'code', 'Takhsis_group')
+    ->get()
+    ->keyBy(fn ($r) =>
+        $r->file_category_id . '|' . $r->code . '|' . $r->Takhsis_group
+    );
+
+
+    // =============================
+    // 6-A) گزارش تجمیعی برای هر سند
+    // =============================
+    $perFileRows = DB::table(DB::raw("({$subQuery->toSql()}) AS sub"))
+    ->mergeBindings($subQuery->getQuery())
+    ->join('file_categories as fc', 'fc.id', '=', 'sub.file_category_id')
+    ->select(
+        'fc.name AS file_name',
+        'sub.file_category_id',
+        'sub.code',
+        'sub.Takhsis_group',
+        DB::raw('SUM(sub.t_mosavvab) AS total_volume'),
+        DB::raw('ROUND(SUM(sub.sum_v_m), 2) AS cost'),
+        DB::raw('ROUND(SUM(sub.t_mosavvab) - SUM(sub.sum_v_m), 2) AS remaining')
+    )
+    ->groupBy('fc.name', 'sub.file_category_id', 'sub.code', 'sub.Takhsis_group')
+    ->get()
+    ->map(function ($row) use ($applicantsPerFile) {
+        $key = $row->file_category_id . '|' . $row->code . '|' . $row->Takhsis_group;
+        $row->applicants_count = $applicantsPerFile[$key]->applicants_count ?? 0;
+        return $row;
+    });
+
+
+        // =============================
+    // 6-B) جمع کل همه سندها
+    // =============================
+    $grandTotal = DB::table(DB::raw("({$subQuery->toSql()}) AS sub"))
+        ->mergeBindings($subQuery->getQuery())
+        ->select(
+            DB::raw('SUM(sub.t_mosavvab) AS total_volume'),
+            DB::raw('ROUND(SUM(sub.sum_v_m), 2) AS cost'),
+            DB::raw('ROUND(SUM(sub.t_mosavvab) - SUM(sub.sum_v_m), 2) AS remaining')
+        )
+        ->first();
+
+     // =============================
+    // 6-B) جمع کل همه متقاضیان
+    // =============================
+
+        $grandApplicants = Allocation::query()
+    ->when(!empty($codes) && !in_array('all', $codes),
+        fn($q) => $q->whereIn('code', $codes)
+    )
+    ->when(!empty($takhsis) && !in_array('all', $takhsis),
+        fn($q) => $q->whereIn('Takhsis_group', $takhsis)
+    )
+    ->when(!empty($fileCategoryIds),
+        fn($q) => $q->whereIn('file_category_id', $fileCategoryIds)
+    )
+    ->distinct('kelace')
+    ->count('kelace');
+
+
+
 
     // =============================
     // 7) داده‌های View
@@ -191,6 +274,9 @@ if (!empty($takhsis) && !in_array('all', $takhsis)) {
 
     return view('admin.reports.allocations', compact(
         'rows',
+        'perFileRows',   // 👈 جدول اصلی (هر سند یک سطر)
+        'grandTotal',    // 👈 سطر آخر
+        'grandApplicants',
         'codesAll',
         'takhsisOptions',
         'codes',
