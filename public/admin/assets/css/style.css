@@ -21073,6 +21073,27 @@ td a.btn, td button.btn {
 }
 
 
+.filter-box {
+    max-height: 180px;      /* ارتفاع قابل تنظیم */
+    overflow-y: auto;
+    background: #fff;
+}
+
+.filter-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.filter-box::-webkit-scrollbar-thumb {
+    background: #bbb;
+    border-radius: 4px;
+}
+
+.filter-box::-webkit-scrollbar-thumb:hover {
+    background: #999;
+}
+
+
+
 
 
 

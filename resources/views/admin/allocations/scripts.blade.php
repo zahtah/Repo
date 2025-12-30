@@ -557,3 +557,34 @@
         tryAdjust(8, 150);
     });
 </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    // وقتی روی "همه" کلیک می‌شود
+    document.querySelectorAll('.select-all').forEach(allBox => {
+        allBox.addEventListener('change', function () {
+            const target = this.dataset.target;
+            document.querySelectorAll('.' + target + '-item')
+                .forEach(cb => cb.checked = this.checked);
+        });
+    });
+
+    // اگر همه آیتم‌ها تیک خورد → "همه" فعال شود
+    document.querySelectorAll('.filter-box').forEach(box => {
+        const items = box.querySelectorAll('input[type=checkbox]:not(.select-all)');
+        const all = box.querySelector('.select-all');
+
+        if (!all) return;
+
+        const syncAll = () => {
+            all.checked = [...items].every(i => i.checked);
+        };
+
+        items.forEach(i => i.addEventListener('change', syncAll));
+        syncAll(); // وضعیت اولیه
+    });
+
+});
+</script>
+

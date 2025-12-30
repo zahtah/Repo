@@ -40,16 +40,24 @@ public function index(Request $request)
     // فیلتر بر اساس file_name از پارامتر query
         $fileFilter = $request->query('file_name');
         if ($fileFilter) {
-            $query->where('file_name', $fileFilter);
+            $query->whereIn('file_name', $fileFilter);
+        }
+
+        if ($request->filled('code')) {
+        $query->whereIn('code', $request->code);
+        }
+
+        if ($request->filled('takhsis_group')) {
+            $query->whereIn('Takhsis_group', $request->takhsis_group);
         }
 
         // فیلتر متناظر با فیلدهای فرم
         if ($request->filled('Shahrestan')) {
-            $query->where('Shahrestan', $request->get('Shahrestan'));
+            $query->whereIn('Shahrestan', $request->get('Shahrestan'));
         }
 
         if ($request->filled('masraf')) {
-            $query->where('Takhsis_group', $request->get('masraf'));
+            $query->whereIn('masraf', $request->get('masraf'));
         }
 
         // بازه تاریخ برای ستون erja (فرمت ورودی باید YYYY-MM-DD از فرم date باشد)
@@ -84,6 +92,11 @@ public function index(Request $request)
                     ->orWhere('motaghasi', 'like', "%{$q}%")
                     ->orWhere('Shahrestan', 'like', "%{$q}%");
             });
+        }
+
+        // کلاسه (متنی)
+        if ($request->filled('kelace')) {
+            $query->where('kelace', 'like', '%' . $request->kelace . '%');
         }
 
         // مرتب‌سازی دلخواه (مثال: ?sort=sal&direction=asc)
@@ -159,15 +172,19 @@ public function index(Request $request)
             ->orderBy('masraf')
             ->pluck('masraf');
 
-        $fileNames = Allocation::select('file_name')
-            ->whereNotNull('file_name')
-            ->distinct()
-            ->whereNotNull('file_name')
-            ->orderBy('file_name')
-            ->pluck('file_name')
-            ->toArray();
+        // $fileNames = Allocation::select('file_name')
+        //     ->whereNotNull('file_name')
+        //     ->distinct()
+        //     ->whereNotNull('file_name')
+        //     ->orderBy('file_name')
+        //     ->pluck('file_name')
+        //     ->toArray();
 
-        return view('admin.allocations.index', compact('rows','allocations', 'shahrestans','takhsis','code', 'masrafs','fileNames','fileFilter'));
+        $fileNames = Allocation::select('file_name')->distinct()->pluck('file_name');
+        $codes = Allocation::select('code')->distinct()->pluck('code');
+        $takhsisGroups = Allocation::select('Takhsis_group')->distinct()->pluck('Takhsis_group');
+        return view('admin.allocations.index', compact('rows','allocations', 'shahrestans','takhsis','code', 'masrafs','fileNames','fileFilter','codes',
+        'takhsisGroups'));
     }
 
     public function create()

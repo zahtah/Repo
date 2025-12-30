@@ -36,6 +36,13 @@
                     <div class="col-md-3">
                         <label class="form-label fw-bold">کد محدوده مطالعاتی</label>
                         <div class="border rounded p-2" style="max-height:180px; overflow:auto;">
+                             {{-- گزینه همه --}}
+                            <div class="form-check text-end mb-2">
+                                <input class="form-check-input" type="checkbox" id="code-all">
+                                <label class="form-check-label fw-bold" for="code-all">
+                                    همه
+                                </label>
+                            </div>
                             @foreach ($codesAll as $c)
                                 <div class="form-check text-end">
                                     <input class="form-check-input" type="checkbox" name="code[]"
@@ -265,6 +272,31 @@
             });
 
         });
+
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const selectAllCheckbox = document.getElementById('code-all');
+            const codeCheckboxes = document.querySelectorAll('input[name="code[]"]');
+
+            selectAllCheckbox.addEventListener('change', () => {
+                codeCheckboxes.forEach(cb => cb.checked = selectAllCheckbox.checked);
+            });
+
+            // اگر هر checkbox دیگری تغییر کرد، "همه" هم باید آپدیت شود
+            codeCheckboxes.forEach(cb => {
+                cb.addEventListener('change', () => {
+                    const allChecked = Array.from(codeCheckboxes).every(cb => cb.checked);
+                    selectAllCheckbox.checked = allChecked;
+                });
+            });
+        });
+
     </script>
+   
+
+
+    
+
 @endpush
 @endcomponent

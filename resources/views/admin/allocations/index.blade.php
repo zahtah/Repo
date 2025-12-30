@@ -30,73 +30,166 @@
 
 
         <form method="GET" action="{{ route('allocations.index') }}" class="card p-3 mb-3">
-            <div class="row gy-2 align-items-end">
+    <div class="row gy-2">
 
-                {{-- فیلدهای دلخواه دیگر مثل شهرستان، مصرف ... --}}
-                <div class="col-md-3">
-                    <label class="form-label">شهرستان</label>
-                    <input type="text" name="Shahrestan" value="{{ request('Shahrestan') }}" class="form-control"
-                        placeholder="مثال: سمنان">
+        {{-- نام سند --}}
+        <div class="col-md-2">
+            <label class="form-label fw-bold">نام سند</label>
+            <div class="border rounded p-2 filter-box">
+                <div class="form-check text-end">
+                    <input class="form-check-input select-all" type="checkbox"
+                        data-target="file_name">
+                    <label class="form-check-label fw-bold">همه</label>
                 </div>
+                <hr class="my-1">
 
-                <div class="col-md-3">
-                    <label class="form-label">تخصیص</label>
-                    <input type="text" name="masraf" value="{{ request('masraf') }}" class="form-control"
-                        placeholder="مثال: شرب، صنعت">
-                </div>
-
-                {{-- FROM datepicker --}}
-                <div class="col-md-2">
-                    <label class="form-label">از تاریخ (ارجاع)</label>
-
-                    @php
-                        use App\Helpers\DateHelper;
-
-                        $fromValue = DateHelper::toJalaliDisplay(request('from'));
-                        $toValue = DateHelper::toJalaliDisplay(request('to'));
-                    @endphp
-
-                    <input type="text" id="from_picker" class="form-control" value="{{ $fromValue }}"
-                        placeholder="۱۴۰۳/۰۱/۰۱">
-                    <input type="hidden" name="from" id="from" value="{{ request('from') }}">
-                </div>
-
-                {{-- TO datepicker --}}
-                <div class="col-md-2">
-                    <label class="form-label">تا تاریخ (ارجاع)</label>
-                    <input type="text" id="to_picker" class="form-control" value="{{ $toValue }}"
-                        placeholder="۱۴۰۳/۱۲/۲۹">
-                    <input type="hidden" name="to" id="to" value="{{ request('to') }}">
-                </div>
-
-                {{-- جستجوی عمومی --}}
-                <div class="col-md-2">
-                    <label class="form-label">جستجو عمومی</label>
-                    <div class="input-group">
-                        <input type="text" name="q" value="{{ request('q') }}" class="form-control"
-                            placeholder="ردیف، کلاسه، متقاضی...">
-                        <button class="btn btn-primary" type="submit">اعمال</button>
+                @foreach ($fileNames as $name)
+                    <div class="form-check text-end">
+                        <input class="form-check-input file_name-item"
+                            type="checkbox"
+                            name="file_name[]"
+                            value="{{ $name }}"
+                            {{ in_array($name, (array)request('file_name')) ? 'checked' : '' }}>
+                        <label class="form-check-label">{{ $name }}</label>
                     </div>
-                </div>
-                {{-- فیلتر نام سند --}}
-                <div class="col-md-2">
-                    <label class="me-2">انتخاب سند:</label>
-                    <select name="file_name" class="form-select me-2" onchange="this.form.submit()">
-                        <option value="">نمایش همه</option>
-                        @foreach ($fileNames as $name)
-                            <option value="{{ $name }}"
-                                {{ isset($fileFilter) && $fileFilter == $name ? 'selected' : '' }}>
-                                {{ $name }}
-                            </option>
-                        @endforeach
-                    </select>
-
-                    @if (isset($fileFilter) && $fileFilter)
-                        <a href="{{ route('allocations.index') }}" class="btn btn-outline-secondary">حذف فیلتر</a>
-                    @endif
-                </div>
+                @endforeach
             </div>
-        </form>
+        </div>
+
+
+        {{-- کد محدوده مطالعاتی --}}
+        <div class="col-md-2">
+            <label class="form-label fw-bold">کد محدوده</label>
+            <div class="border rounded p-2 filter-box">
+                <div class="form-check text-end">
+                    <input class="form-check-input select-all" type="checkbox"
+                        data-target="code">
+                    <label class="form-check-label fw-bold">همه</label>
+                </div>
+                <hr class="my-1">
+
+                @foreach ($codes as $c)
+                    <div class="form-check text-end">
+                        <input class="form-check-input code-item"
+                            type="checkbox"
+                            name="code[]"
+                            value="{{ $c }}"
+                            {{ in_array($c, (array)request('code')) ? 'checked' : '' }}>
+                        <label class="form-check-label">{{ $c }}</label>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+
+        {{-- گروه تخصیص --}}
+        <div class="col-md-2">
+            <label class="form-label fw-bold">گروه تخصیص</label>
+            <div class="border rounded p-2 filter-box">
+                <div class="form-check text-end">
+                    <input class="form-check-input select-all" type="checkbox"
+                        data-target="takhsis_group">
+                    <label class="form-check-label fw-bold">همه</label>
+                </div>
+                <hr class="my-1">
+
+                @foreach ($takhsisGroups as $m)
+                    <div class="form-check text-end">
+                        <input class="form-check-input takhsis_group-item"
+                            type="checkbox"
+                            name="takhsis_group[]"
+                            value="{{ $m }}"
+                            {{ in_array($m, (array)request('takhsis_group')) ? 'checked' : '' }}>
+                        <label class="form-check-label">{{ $m }}</label>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+
+        <!-- <div class="col-md-2">
+            <label class="form-label">گروه تخصیص</label>
+            <select name="takhsis_group[]" class="form-select" multiple>
+                @foreach ($takhsisGroups as $t)
+                    <option value="{{ $t }}"
+                        {{ collect(request('takhsis_group'))->contains($t) ? 'selected' : '' }}>
+                        {{ $t }}
+                    </option>
+                @endforeach
+            </select>
+        </div> -->
+
+        {{-- شهرستان --}}
+        <div class="col-md-2">
+            <label class="form-label fw-bold">شهرستان </label>
+            <div class="border rounded p-2 filter-box">
+                <div class="form-check text-end">
+                    <input class="form-check-input select-all" type="checkbox"
+                        data-target="Shahrestan">
+                    <label class="form-check-label fw-bold">همه</label>
+                </div>
+                <hr class="my-1">
+
+                @foreach ($shahrestans as $m)
+                    <div class="form-check text-end">
+                        <input class="form-check-input Shahrestan-item"
+                            type="checkbox"
+                            name="Shahrestan[]"
+                            value="{{ $m }}"
+                            {{ in_array($m, (array)request('Shahrestan')) ? 'checked' : '' }}>
+                        <label class="form-check-label">{{ $m }}</label>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        {{-- نوع مصرف --}}
+        <div class="col-md-2">
+            <label class="form-label fw-bold">نوع مصرف</label>
+            <div class="border rounded p-2 filter-box">
+                <div class="form-check text-end">
+                    <input class="form-check-input select-all" type="checkbox"
+                        data-target="masraf">
+                    <label class="form-check-label fw-bold">همه</label>
+                </div>
+                <hr class="my-1">
+
+                @foreach ($masrafs as $m)
+                    <div class="form-check text-end">
+                        <input class="form-check-input masraf-item"
+                            type="checkbox"
+                            name="masraf[]"
+                            value="{{ $m }}"
+                            {{ in_array($m, (array)request('masraf')) ? 'checked' : '' }}>
+                        <label class="form-check-label">{{ $m }}</label>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+
+        {{-- کلاسه (متنی) --}}
+        <div class="col-md-1">
+            <label class="form-label">کلاسه</label>
+            <input type="text" name="kelace" value="{{ request('kelace') }}"
+                   class="form-control">
+        </div>
+        
+
+        {{-- دکمه‌ها --}}
+        <div class="col-md-1 d-flex align-items-end gap-1">
+            <button class="btn btn-primary w-100">اعمال</button>
+            <a href="{{ route('allocations.index') }}" class="btn btn-outline-danger w-100">
+                ریست
+            </a>
+        </div>
+        <!-- <div class="col-md-1 d-flex align-items-end">
+            
+        </div> -->
+
+    </div>
+</form>
+
 
         <!-- جدول -->
         <div class="card">
