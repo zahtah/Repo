@@ -21,7 +21,7 @@
             @endif
 
             {{-- فرم ایجاد رکورد --}}
-            <form action="{{ route('allocations.store') }}" method="POST">
+            <form action="{{ route('allocations.store') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="row g-3 d-flex">
 
@@ -42,7 +42,7 @@
                         </select>
                     </div>
 
-                     {{-- کد محدوده --}}
+                    {{-- کد محدوده --}}
                     <div class="col-md-2">
                         <label class="form-label">کد محدوده</label>
                         <select name="code" id="field_code" class="form-control text-end">
@@ -82,7 +82,7 @@
                         <input type="hidden" name="erja" id="erja" value="{{ old('erja') }}">
                     </div>
 
-                   
+
 
 
                     {{-- نوع منطقه --}}
@@ -225,6 +225,12 @@
                             <input type="text" name="mosavabat" class="form-control text-end"
                                 value="{{ old('mosavabat') }}">
                         </div>
+
+                    </div>
+                    {{-- فایل صورت جلسه --}}
+                    <div class="col-md-2 float-left">
+                        <label class="form-label">فایل صورت‌جلسه</label>
+                        <input type="file" name="minutes" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
                     </div>
 
                 </div>

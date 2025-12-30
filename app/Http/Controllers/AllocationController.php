@@ -399,6 +399,7 @@ public function store(Request $request)
         'mosavabat'     => 'nullable|string|max:255',
         'file_name'     => 'nullable|string|max:255',
         'file_category_id' => 'required|exists:file_categories,id',
+        'minutes' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:2048',
 
     ]);
 
@@ -447,14 +448,24 @@ public function store(Request $request)
     // --- 4) نرمال‌سازی code و Takhsis_group ---
     $code = isset($validated['code']) && $validated['code'] !== '' ? $validated['code'] : null;
     $takhsis = isset($validated['Takhsis_group']) && $validated['Takhsis_group'] !== '' ? $validated['Takhsis_group'] : null;
+    
 
     try {
 
         $fileCategoryId = $validated['file_category_id'];
         $fileName = FileCategory::find($fileCategoryId)?->name;
 
+       
+         $minutesPath = null;
 
-        $allocation = DB::transaction(function () use ($validated, $fileName, $currentVm, $t_mosavvab, $code, $takhsis) {
+        if ($request->hasFile('minutes')) {
+            $file = $request->file('minutes');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $minutesPath = $file->storeAs('minutes', $filename, 'public');
+        }
+
+
+        $allocation = DB::transaction(function () use ($validated, $fileName, $currentVm, $t_mosavvab, $code, $takhsis,$minutesPath) {
             
 
             $fileCategoryId = $validated['file_category_id'];
@@ -477,6 +488,8 @@ public function store(Request $request)
 
             // آماده‌سازی داده برای ایجاد رکورد
             $toCreate = $validated;
+            $toCreate['minutes'] = $minutesPath;
+
             $toCreate['row'] = $nextRow;
             $toCreate['file_name'] = $fileName;
             $toCreate['file_category_id'] = $fileCategoryId;

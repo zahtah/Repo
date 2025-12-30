@@ -14,7 +14,7 @@ class Allocation extends Model
     protected $fillable = [
         'row','Shahrestan','sal','erja','code','mantaghe','Abadi','kelace',
         'motaghasi','darkhast','Takhsis_group','masraf','comete','shomare',
-        'date_shimare','vahed','q_m','V_m','t_mosavvab','sum','baghi','mosavabat','file_name','file_category_id',
+        'date_shimare','vahed','q_m','V_m','t_mosavvab','sum','baghi','mosavabat','file_name','file_category_id','minutes',
     ];
 
     protected $casts = [
