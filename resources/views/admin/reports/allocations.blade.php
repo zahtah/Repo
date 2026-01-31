@@ -86,7 +86,7 @@
         <div class="card">
             <div class="card-body p-2">
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover table-bordered mb-0 text-center allocation-table">
+                    <table class="table table-striped table-hover table-bordered mb-0 text-center allocation-table2">
                         <thead class="table-light">
                             <tr>
                                 <th>نام سند</th>

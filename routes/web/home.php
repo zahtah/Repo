@@ -28,7 +28,10 @@ Route::get('/dashboard', function () {
 })->middleware(['auth', 'verified'])->name('dashboard');
 
 //Route::get('/redirect', [HomeController::class, 'redirect']);
-Route::get('/', [HomeController::class, 'index']);
+Route::get('/master', [HomeController::class, 'index'])->name('index');
+Route::get('/',function(){
+    return redirect('/login');
+});
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

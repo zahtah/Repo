@@ -16,10 +16,11 @@ class AdminAuthenticated
      */
     public function handle(Request $request, Closure $next)
     {
-        if($request->user()->isSuperUser() || $request->user()->isStaffUser()){
-           return $next($request);
-        }
-        return redirect('/');
+        return $next($request);
+        // if($request->user()->isSuperUser() || $request->user()->isStaffUser()){
+        //    return $next($request);
+        // }
+        // return redirect('/');
         
     }
 }

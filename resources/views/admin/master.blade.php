@@ -56,6 +56,7 @@
         <!-- partial -->
         <div class="container-fluid page-body-wrapper">
             <!-- partial:partials/_navbar.html -->
+            {{-- @include('home.layouts.header') --}}
             @include('admin.layouts.navbar')
             <!-- partial -->
             <!-- main-panel -->
@@ -97,13 +98,15 @@
     <script src="{{ asset('admin/assets/js/todolist.js') }}"></script>
     <!-- jalali -->
     {{-- قرار بده داخل <head> قالب یا فقط قبل از اسکریپت‌های انتهای body --}}
-    <link rel="stylesheet"
+    {{-- <link rel="stylesheet"
         href="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/css/persian-datepicker.min.css">
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> --}}
+    <script src="{{ asset('admin/assets/vendors/js/sweetalert2@11.js')}}"></script>
+    <script src="{{ asset('admin/assets/vendors/js/jquery-3.6.0.min.js')}}"></script>
     <!-- End custom js for this page -->
 </body>
 

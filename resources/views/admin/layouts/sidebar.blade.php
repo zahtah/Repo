@@ -1,6 +1,6 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
     <div class="sidebar-brand-wrapper d-none d-lg-flex align-items-center justify-content-center fixed-top">
-        <a class="sidebar-brand brand-logo" href="index.html"><img src="{{ asset('assets/images/logo-FA.jpg') }}"
+        <a class="sidebar-brand brand-logo" href="{{ route('index') }}"><img src="{{ asset('assets/images/logo-FA.jpg') }}"
                 alt="logo" /></a>
         <a class="sidebar-brand brand-logo-mini" href="index.html"><img src="assets/images/logo-mini.svg"
                 alt="logo" /></a>
@@ -51,6 +51,17 @@
         {{-- <li class="nav-item nav-category">
             <span class="nav-link">Navigation</span>
         </li> --}}
+         <li class="nav-item menu-items">
+            <a class="nav-link" href="{{ route('allocations.homee') }}">
+                <span class="menu-icon">
+                    <i class="mdi mdi-home"></i>
+                </span>
+                <span class="menu-title">خانه</span>
+            </a>
+        </li>
+        @auth
+            
+        
         <li class="nav-item menu-items">
             <a class="nav-link" href="{{ route('reports.allocations') }}">
                 <span class="menu-icon">
@@ -85,6 +96,7 @@
                 <span class="menu-title">دسته بندی ها</span>
             </a>
         </li>
+        @role('admin')
         <li class="nav-item menu-items">
             <a class="nav-link" href="{{ route('all-users') }}">
                 <span class="menu-icon">
@@ -93,6 +105,7 @@
                 <span class="menu-title">کاربران</span>
             </a>
         </li>
+        @endrole
         <li class="nav-item menu-items">
             <a class="nav-link" href="{{ route('dashboard') }}">
                 <span class="menu-icon">
@@ -101,6 +114,7 @@
                 <span class="menu-title">نمودارها</span>
             </a>
         </li>
+        
         {{-- <li class="nav-item menu-items">
             <a class="nav-link" href="pages/icons/mdi.html">
                 <span class="menu-icon">
@@ -141,5 +155,27 @@
                 <span class="menu-title">مستندات</span>
             </a>
         </li>
+        <li class="nav-item menu-items">
+            <a class="nav-link" href="{{ route('profile.edit') }}">
+                <span class="menu-icon">
+                    <i class="mdi mdi-account-group"></i>
+                </span>
+                <span class="menu-title">پروفایل</span>
+            </a>
+        </li>
+        <li class="nav-item menu-items">
+            <span class="menu-icon">
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+
+                <x-dropdown-link :href="route('logout')"
+                    onclick="event.preventDefault();
+                this.closest('form').submit();">
+                    {{ __('خروج') }}
+                </x-dropdown-link>
+            </form>
+            </span>
+        </li>
+        @endauth
     </ul>
 </nav>

@@ -3,14 +3,14 @@
         <div class="card">
             <div class="card-body">
                 <div class="d-flex justify-content-between">
-                    <h4 class="card-title">Categories</h4>
-                    <a class="nav-link btn btn-success create-new-button" href="{{ route('createCategories') }}">+ Create New
-                        Category</a>
+                    <h4 class="card-title">خانه</h4>
+                    {{-- <a class="nav-link btn btn-success create-new-button" href="{{ route('createCategories') }}">+ Create New
+                        Category</a> --}}
                 </div>
                 </p>
                 <div class="table-responsive">
                     <table class="table table-bordered">
-                        <thead>
+                        {{-- <thead>
                             <tr>
                                 <th> # </th>
                                 <th> Category name </th>
@@ -26,7 +26,7 @@
                             </form>
 
 
-                        </tbody>
+                        </tbody> --}}
                     </table>
                 </div>
             </div>

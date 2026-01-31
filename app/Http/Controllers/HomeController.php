@@ -11,6 +11,7 @@ class HomeController extends Controller
 
     public function index() {
         return view('home.master');
+        //  return view('admin.allocations.allocations');
     }
     
     // public function redirect() {

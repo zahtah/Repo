@@ -31,24 +31,31 @@ use App\Models\User;
     Route::get('/edit-category/{id}', [CategoryController::class, 'editCategory'])->name('editCategory');
     Route::put('/update-category/{id}', [CategoryController::class, 'updateCategory'])->name('update-category');
     Route::get('/all-users', [UserController::class, 'allUsers'])->name('all-users');
-    Route::get('/create-user', [UserController::class, 'createUser'])->name('create_user');
-    Route::post('/store-user', [UserController::class, 'storeUser'])->name('store-user');
-    Route::get('/edit-user/{id}', [UserController::class, 'editUser'])->name('edit-user');
-    Route::put('/update-user/{id}', [UserController::class, 'updateUser'])->name('update-user');
+    Route::middleware(['auth', 'role:admin'])->group(function () {
+        Route::get('/create-user', [UserController::class, 'createUser'])->name('create_user');
+        Route::post('/store-user', [UserController::class, 'storeUser'])->name('store-user');
+        Route::get('/edit-user/{id}', [UserController::class, 'editUser'])->name('edit-user');
+        Route::put('/update-user/{id}', [UserController::class, 'updateUser'])->name('update-user');
+        Route::put('/users/{user}/change-role',[UserController::class, 'changeRole'])->name('users.changeRole') ->middleware('role:admin');
+    });
+
 
 
     //َAllocations
-    //Route::get('/allocations', [AllocationController::class, 'allocations'])->name('allocations');
+    Route::get('homee', [AllocationController::class, 'homee'])->name('allocations.homee');
     Route::get('allocations', [AllocationController::class,'index'])->name('allocations.index');
     Route::get('allocations/create', [AllocationController::class,'create'])->name('allocations.create');
     Route::post('allocations', [AllocationController::class,'store'])->name('allocations.store');
-    Route::get('allocations/{allocation}/edit', [AllocationController::class,'edit'])->name('allocations.edit');
+    
     Route::get('allocations/{id}/data', [AllocationController::class, 'show'])->name('allocations.show'); // برای fetch JSON
+    // Route::middleware(['auth', 'role:admin'])->group(function () {
+    Route::get('allocations/{allocation}/edit', [AllocationController::class,'edit'])->name('allocations.edit');
     Route::put('allocations/{id}', [AllocationController::class, 'update'])->name('allocations.update'); // آپدیت (AJAX)
-
+    Route::delete('/allocations/{id}', [AllocationController::class, 'destroy'])->name('allocations.destroy');
+    // });
+    Route::put('/allocations/{allocation}/approve',[AllocationController::class, 'approve'])->name('allocations.approve') ->middleware('auth');
 
     Route::get('allocations/filter-options', [AllocationController::class,'filterOptions'])->name('allocations.filterOptions');
-    Route::delete('/allocations/{id}', [AllocationController::class, 'destroy'])->name('allocations.destroy');
     Route::post('/allocations/compute-sum',[AllocationController::class, 'computeSum'])->name('allocations.computeSum');
     Route::post('allocations/compute-edit-sum', [AllocationController::class, 'computeEditSum'])->name('allocations.computeEditSum');
     Route::post('allocations/compute-t', [AllocationController::class, 'computeTMosavvab'])->name('allocations.computeTMosavvab');

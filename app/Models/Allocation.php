@@ -14,7 +14,8 @@ class Allocation extends Model
     protected $fillable = [
         'row','Shahrestan','sal','erja','code','mantaghe','Abadi','kelace',
         'motaghasi','darkhast','Takhsis_group','masraf','comete','shomare',
-        'date_shimare','vahed','q_m','V_m','t_mosavvab','sum','baghi','mosavabat','file_name','file_category_id','minutes',
+        'date_shimare','vahed','q_m','V_m','t_mosavvab','sum','baghi','session','mosavabat',
+        'file_name','file_category_id','minutes','status','created_by','approved_by'
     ];
 
     protected $casts = [
@@ -93,6 +94,20 @@ class Allocation extends Model
                 $s = $allocation->sum ? (float)$allocation->sum : 0.0;
                 $allocation->baghi = round($t - $s, 3);
             }
+
+            //مقداردهی خودکار file_category_id پس از ایمپورت اکسل
+
+            if($allocation->file_category_id){
+                return;
+            }
+            static $map=null;
+            if ($map===null){
+                $map=FileCategory::pluck('id','name')->toArray();
+            }
+            if (isset($map[$allocation->file_name])) {
+                $allocation->file_category_id = $map[$allocation->file_name];
+            }
+
         });
 
         // قبل از به‌روزرسانی
@@ -131,6 +146,16 @@ public function getBaghiAttribute($value)
     if ($value === null || $value === '') return null;
     return (float) $value;
 }
+public function creator()
+{
+    return $this->belongsTo(User::class, 'created_by');
+}
+
+public function approver()
+{
+    return $this->belongsTo(User::class, 'approved_by');
+}
+
 }
 
     

@@ -168,6 +168,7 @@ class AllocationsImport implements ToModel, WithHeadingRow, WithCalculatedFormul
 
         return new Allocation([
             'row' => $this->getValue($row, 'row'),
+            'created_by'=>1,
             'file_name' => $this->fileName,
             'Shahrestan' => $this->getValue($row, 'Shahrestan'),
             'sal' => $this->toInt($this->getValue($row, 'sal')),
@@ -191,8 +192,10 @@ class AllocationsImport implements ToModel, WithHeadingRow, WithCalculatedFormul
             'sum' => $sumForDb,
             'baghi' => $baghi,
             'mosavabat' => $this->getValue($row, 'mosavabat'),
+            'status' => 'approved',
         ]);
     }
+
 
     private function convertJalali($value)
     {

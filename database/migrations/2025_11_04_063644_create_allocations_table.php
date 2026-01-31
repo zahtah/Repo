@@ -22,7 +22,7 @@ return new class extends Migration
             $table->integer('code')->nullable();
             $table->string('mantaghe')->nullable();
             $table->string('Abadi')->nullable();
-            $table->string('kelace')->unique();
+            $table->string('kelace')->nullable();
             $table->string('motaghasi')->nullable();
             $table->string('darkhast')->nullable();
             $table->string('Takhsis_group')->nullable();

@@ -588,3 +588,118 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 
+<!-- For Approve Record -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const csrfToken = document.querySelector('meta[name="csrf-token"]')
+        ?.getAttribute('content');
+
+    function showSuccessToast(message) {
+        Swal.fire({
+            toast: true,
+            position: 'top-end',
+            icon: 'success',
+            title: message,
+            showConfirmButton: false,
+            timer: 2500,
+            timerProgressBar: true,
+            customClass: {
+                popup: 'swal2-rtl'
+            }
+        });
+    }
+
+    function showError(title, text) {
+        Swal.fire({
+            icon: 'error',
+            title: title || 'خطا',
+            text: text || 'مشکلی پیش آمد.',
+            customClass: {
+                popup: 'swal2-rtl'
+            }
+        });
+    }
+
+    document.querySelectorAll('.btn-approve').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+
+            const url = this.dataset.url;
+            const form = this.closest('form.approve-form');
+            const row = form ? form.closest('tr') : null;
+            const approveBtn = this;
+
+            Swal.fire({
+                title: 'تأیید نهایی رکورد',
+                text: 'آیا از تأیید این رکورد مطمئن هستید؟',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonText: 'بله، تأیید شود',
+                cancelButtonText: 'انصراف',
+                reverseButtons: true,
+                customClass: {
+                    popup: 'swal2-rtl'
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    fetch(url, {
+                        method: 'PUT',
+                        headers: {
+                            'X-CSRF-TOKEN': csrfToken,
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'same-origin'
+                    })
+                    .then(async response => {
+                        const isJson = response.headers
+                            .get('content-type')
+                            ?.includes('application/json');
+
+                        const data = isJson ? await response.json() : null;
+
+                        if (!response.ok) {
+                            const msg = (data && data.message)
+                                ? data.message
+                                : 'تأیید انجام نشد';
+                            throw new Error(msg);
+                        }
+
+                        // تغییر ظاهر ردیف بعد از تأیید
+                        if (row) {
+                            row.classList.remove('table-warning');
+                            row.classList.add('table-success');
+                        }
+
+                        // حذف دکمه تأیید
+                        approveBtn.remove();
+
+                        // تغییر متن وضعیت (اگر ستون وضعیت داری)
+                        const statusBadge = row?.querySelector('.allocation-status');
+                        if (statusBadge) {
+                            statusBadge.innerHTML =
+                                '<span class="badge bg-success">تأیید شده</span>';
+                        }
+
+                        showSuccessToast(
+                            (data && data.message)
+                                ? data.message
+                                : 'رکورد با موفقیت تأیید شد'
+                        );
+                    })
+                    .catch(err => {
+                        console.error(err);
+                        showError('خطا', err.message || 'در تأیید رکورد خطا رخ داد.');
+                    });
+                }
+            });
+        });
+    });
+
+});
+</script>
+<!-- End of Approve Script -->
+
+

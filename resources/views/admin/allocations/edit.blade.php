@@ -1,5 +1,5 @@
 @component('admin.layouts.content')
-
+    
     @section('content')
         <div class="container" dir="rtl">
             <h1 class="mb-4 text-end">ویرایش جدید تخصیص</h1>
@@ -206,6 +206,14 @@
                             value="{{ old('date_shimare', $allocation->date_shimare) }}">
                     </div>
 
+                    {{-- شماره جلسه --}}
+
+                    <div class="col-md-2">
+                        <label class="form-label">شماره جلسه</label>
+                        <input type="text" name="session" class="form-control text-end"
+                            value="{{ old('session', $allocation->session) }}">
+                    </div>
+
                     {{-- واحد دبی
                     <div class="col-md-2">
                         <label class="form-label">واحد دبی</label>
@@ -260,7 +268,16 @@
                             <input type="text" name="mosavabat" class="form-control text-end"
                                 value="{{ old('mosavabat', $allocation->mosavabat) }}">
                         </div>
+
+                       
                     </div>
+
+                    {{-- فایل صورت جلسه --}}
+                    <div class="col-md-2">
+                        <label class="form-label">فایل صورت جلسه</label>
+                        <input type="file" name="minutes" class="form-control text-end" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
+                    </div>
+                    
 
                 </div>
 
@@ -269,6 +286,7 @@
                     <a href="{{ route('allocations.index') }}" class="btn btn-secondary">بازگشت</a>
                 </div>
             </form>
+            
         </div>
 
         <link rel="stylesheet"
@@ -320,7 +338,7 @@
         </script>
 
 
-        @push('scripts')
+        {{-- @push('scripts')
             <script>
                 document.addEventListener('DOMContentLoaded', function() {
                     const csrf = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') ||
@@ -498,7 +516,7 @@
                     //fetchNextRow();
                 });
             </script>
-        @endpush
+        @endpush --}}
     @endsection
-
+            
 @endcomponent

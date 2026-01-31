@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Models\Allocation;
+use App\Policies\AllocationPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 
@@ -13,8 +15,9 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected $policies = [
-        // 'App\Models\Model' => 'App\Policies\ModelPolicy',
+        Allocation::class => AllocationPolicy::class,
     ];
+
 
     /**
      * Register any authentication / authorization services.

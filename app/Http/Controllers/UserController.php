@@ -4,14 +4,16 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
 
 use function PHPUnit\Framework\isNull;
 
 class UserController extends Controller
 {
      public function allUsers() {
-        $users = User::all();
-        return view('admin.users.all-users',compact('users')) ;
+        $users = User::with('roles')->get();
+        $roles = Role::all(); // برای dropdown تغییر نقش
+        return view('admin.users.all-users',compact('users', 'roles')) ;
     }
     public function createUser()
     {
@@ -55,4 +57,24 @@ class UserController extends Controller
         }
         return redirect(route('all-users'));
     }
+    public function changeRole(Request $request, User $user)
+    {
+        $request->validate([
+            'role' => 'required|exists:roles,name'
+        ]);
+        if (auth()->id() === $user->id) {
+            return back()->withErrors('نمی‌توانید نقش خودتان را تغییر دهید');
+        }
+        if ($user->hasRole('admin') && auth()->id() !== 1) {
+            abort(403);
+        }
+
+
+
+        // حذف نقش‌های قبلی
+        $user->syncRoles([$request->role]);
+
+        return redirect()->back()->with('success', 'نقش کاربر تغییر کرد');
+    }
 }
+

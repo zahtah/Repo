@@ -10,3 +10,13 @@
 حذف بخش مصوب دبی
 
 امکان بارگذاری چند نوع اکسل برای انتخاب در داشبورد
+
+
+اصلاح migration
+php artisan migrate
+php artisan db:seed --class=RolePermissionSeeder
+php artisan tinker
+$user = User::find(1);
+$user->assignRole('manager');
+
+

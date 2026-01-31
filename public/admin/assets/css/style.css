@@ -20881,7 +20881,11 @@ textarea.form-control:focus {
     box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25) !important;
 }
 .allocation-table tr td {
-    background-color: cornflowerblue;
+    /* background-color: cornflowerblue; */
+  color: black;
+}
+.allocation-table2 tr td{
+  background-color: cornflowerblue;
   color: black;
 }
 .allocation-table tr td  :hover{

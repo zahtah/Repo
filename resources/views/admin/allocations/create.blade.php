@@ -170,6 +170,11 @@
                             value="{{ old('date_shimare') }}" placeholder="۱۴۰۳/۰۱/۰۱">
                         <input type="hidden" name="date_shimare" id="date_shimare" value="{{ old('date_shimare') }}">
                     </div>
+                    {{-- شماره جلسه  --}}
+                    <div class="col-md-2">
+                        <label class="form-label">شماره جلسه</label>
+                        <input type="text" name="session" class="form-control text-end" value="{{ old('session') }}">
+                    </div>
 
                     {{-- واحد دبی
                     <div class="col-md-2">

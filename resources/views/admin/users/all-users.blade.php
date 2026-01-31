@@ -18,6 +18,7 @@
                                 <th> Phone </th>
                                 <th> Address </th>
                                 <th> Email Status </th>
+                                <th>Role</th>   {{-- ستون جدید --}}
                                 <th>Action </th>
                             </tr>
                         </thead>
@@ -38,8 +39,32 @@
                                         @endif
                                     </td>
                                     <td>
-                                        <a href="{{ route('edit-user', $user->id) }}" class="btn btn-sm btn-info">Edit</a>
-                                        <a href="#" class="btn btn-sm btn-danger">Delete</a>
+                                        @role('admin')
+                                            @include('admin.users.change-role', ['user' => $user])
+                                            @if($user->roles->isNotEmpty())
+                                                <span class="badge bg-info">
+                                                    {{ $user->roles->first()->name }}
+                                                </span>
+                                            @else
+                                                <span class="badge bg-secondary">بدون نقش</span>
+                                            @endif
+                                            {{-- تغییر نقش --}}
+                                        @endrole
+                                        @unlessrole('admin')
+                                            <span class="text-muted">دسترسی ندارد</span>
+                                        @endunlessrole
+
+                                        
+                                    </td>
+                                    <td>
+                                        @role('admin')
+                                            <a href="{{ route('edit-user', $user->id) }}" class="btn btn-sm btn-info">Edit</a>
+                                            <a href="#" class="btn btn-sm btn-danger">Delete</a>
+                                        @endrole
+                                        @unlessrole('admin')
+                                            <span class="text-muted">دسترسی ندارد</span>
+                                        @endunlessrole
+
                                     </td>
                                 </tr>
                             @endforeach

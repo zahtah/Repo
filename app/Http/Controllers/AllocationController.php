@@ -17,9 +17,9 @@ use Illuminate\Support\Facades\Validator;
 
 class AllocationController extends Controller
 {
-    // public function allocations(){
-    //     return view('admin.allocations.allocations');
-    // }
+    public function homee(){
+        return view('admin.allocations.homee');
+    }
     public function import(Request $request)
     {
         $request->validate([
@@ -58,6 +58,9 @@ public function index(Request $request)
 
         if ($request->filled('masraf')) {
             $query->whereIn('masraf', $request->get('masraf'));
+        }
+         if ($request->filled('session')) {
+            $query->whereIn('session', $request->get('session'));
         }
 
         // بازه تاریخ برای ستون erja (فرمت ورودی باید YYYY-MM-DD از فرم date باشد)
@@ -131,6 +134,7 @@ public function index(Request $request)
         $takhsis = $request->get('Takhsis_group');
         $code = $request->get('code');
         $fileFilter = $request->get('file_name');
+        $session = $request->get('session');
 
         // Base query for rows (with optional filters)
         $base = Allocation::query();
@@ -183,7 +187,7 @@ public function index(Request $request)
         $fileNames = Allocation::select('file_name')->distinct()->pluck('file_name');
         $codes = Allocation::select('code')->distinct()->pluck('code');
         $takhsisGroups = Allocation::select('Takhsis_group')->distinct()->pluck('Takhsis_group');
-        return view('admin.allocations.index', compact('rows','allocations', 'shahrestans','takhsis','code', 'masrafs','fileNames','fileFilter','codes',
+        return view('admin.allocations.index', compact('rows','allocations', 'shahrestans','takhsis','code', 'masrafs','session','fileNames','fileFilter','codes',
         'takhsisGroups'));
     }
 
@@ -375,6 +379,7 @@ public function nextRow(Request $request)
 
 public function store(Request $request)
 {
+    $this->authorize('create', Allocation::class);
     // اعتبارسنجی پایه‌ای
     $validated = $request->validate([
         'row'           => 'nullable',
@@ -384,7 +389,7 @@ public function store(Request $request)
         'code'          => 'nullable|integer',
         'mantaghe'      => 'nullable|string|max:255',
         'Abadi'         => 'nullable|string|max:255',
-        'kelace'        => 'required|unique:allocations,kelace|max:255',
+        'kelace'        => 'nullable|string|max:255',
         'motaghasi'     => 'nullable|string|max:255',
         'darkhast'      => 'nullable|string|max:255',
         'Takhsis_group' => 'nullable|string|max:255',
@@ -399,7 +404,8 @@ public function store(Request $request)
         'mosavabat'     => 'nullable|string|max:255',
         'file_name'     => 'nullable|string|max:255',
         'file_category_id' => 'required|exists:file_categories,id',
-        'minutes' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:2048',
+        'minutes'       => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:2048',
+        'session'      => 'nullable|string|max:255',
 
     ]);
 
@@ -454,7 +460,7 @@ public function store(Request $request)
 
         $fileCategoryId = $validated['file_category_id'];
         $fileName = FileCategory::find($fileCategoryId)?->name;
-
+        $session = $validated['session'];
        
          $minutesPath = null;
 
@@ -465,7 +471,7 @@ public function store(Request $request)
         }
 
 
-        $allocation = DB::transaction(function () use ($validated, $fileName, $currentVm, $t_mosavvab, $code, $takhsis,$minutesPath) {
+        $allocation = DB::transaction(function () use ($validated, $fileName, $currentVm, $t_mosavvab, $code, $takhsis,$minutesPath,$session) {
             
 
             $fileCategoryId = $validated['file_category_id'];
@@ -497,6 +503,9 @@ public function store(Request $request)
             $toCreate['t_mosavvab'] = $t_mosavvab;
             $toCreate['sum'] = $finalSum;
             $toCreate['baghi'] = $baghi;
+            $toCreate['session'] = $session;
+            $toCreate['status'] = 'draft';
+            $toCreate['created_by'] = auth()->id();
 
             return Allocation::create($toCreate);
         }, 5); // 5 تلاش در صورت deadlock
@@ -600,7 +609,7 @@ public function update(Request $request, $id)
         'code'          => 'nullable|integer',
         'mantaghe'      => 'nullable|string|max:255',
         'Abadi'         => 'nullable|string|max:255',
-        'kelace'        => ['required', Rule::unique('allocations','kelace')->ignore($allocation->id)],
+        'kelace'        => 'nullable|string|max:255',
         'motaghasi'     => 'nullable|string|max:255',
         'darkhast'      => 'nullable|string|max:255',
         'Takhsis_group' => 'nullable|string|max:255',
@@ -615,6 +624,8 @@ public function update(Request $request, $id)
         't_mosavvab'    => 'numeric|nullable',
         //'baghi'         => 'numeric|nullable',
         'mosavabat'     => 'nullable|string|max:255',
+        'minutes'       => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:2048',
+        'session'      => 'nullable|string|max:255',
     ]);
 
     // helper: تبدیل اعداد فارسی به انگلیسی
@@ -785,6 +796,21 @@ public function export()
 {
     return Excel::download(new AllocationsExport , 'allocations.xlsx');
 }
+
+public function approve(Allocation $allocation)
+{
+    $this->authorize('approve', $allocation);
+
+    $allocation->update([
+        'status' => 'approved',
+        'approved_by' => auth()->id(),
+        'approved_at' => now(),
+    ]);
+
+    return response()->json([
+            'message' => 'رکورد با موفقیت تأیید شد'
+        ]);}
+        
 
 
 

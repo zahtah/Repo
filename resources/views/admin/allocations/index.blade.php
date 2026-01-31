@@ -11,14 +11,17 @@
                 </div>
 
                 <div class="d-flex flex-column flex-md-row gap-2">
-                    <a href="{{ route('allocations.create') }}" class="btn btn-success">ثبت جدید</a>
+                    @can('create', App\Models\Allocation::class)
+                        <a href="{{ route('allocations.create') }}" class="btn btn-success">ثبت جدید</a>
+                    @endcan
 
-                    <a href="{{ route('allocations.export') }}" class="btn btn-outline-primary"> خروجی Excel </a>
-
-                    <!-- دکمه باز کردن modal -->
-                    <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importModal">
-                        وارد کردن از Excel
-                    </button>
+                    {{-- <a href="{{ route('allocations.export') }}" class="btn btn-outline-primary"> خروجی Excel </a> --}}
+                    @role('admin')
+                        <!-- دکمه باز کردن modal -->
+                        <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importModal">
+                            وارد کردن از Excel
+                        </button>
+                    @endrole
                 </div>
             </div>
 
@@ -29,9 +32,8 @@
         @endif
 
 
-        <form method="GET" action="{{ route('allocations.index') }}" class="card p-3 mb-3">
+<form method="GET" action="{{ route('allocations.index') }}" class="card p-3 mb-3">
     <div class="row gy-2">
-
         {{-- نام سند --}}
         <div class="col-md-2">
             <label class="form-label fw-bold">نام سند</label>
@@ -224,12 +226,16 @@
                             <th>تخصیص پنجم</th>
                             <th>جمع</th>
                             <th>باقی‌مانده</th>
+                            <th>شماره جلسه</th>
+                            <th>فایل صورت جلسه</th>
+                            <th>وضعیت</th>
                             <th>عملیات</th>
+                            <th> تایید نهایی</th>
                         </tr>
                     </thead>
                     <tbody class="align-middle text-center allocation-table">
                         @forelse($allocations as $allocation)
-                            <tr data-id="{{ $allocation->id }}">
+                            <tr data-id="{{ $allocation->id }}" style="background-color:{{ $allocation->status === 'approved' ? 'cornflowerblue' : '#6a008a' }}">
                                 <td class="cell-index">
                                     {{ $loop->iteration + ($allocations->currentPage() - 1) * $allocations->perPage() }}
                                 </td>
@@ -256,25 +262,93 @@
                                 <td class="cell-sum">{{ $allocation->sum }}</td>
                                 {{-- <td class="cell-sum">{{ number_format($allocation->cumulative_vm ?? 0, 2) }}</td> --}}
                                 <td class="cell-baghi">{{ $allocation->baghi }}</td>
+                                <td class="cell-session">{{ $allocation->session }}</td>
+                                @php
+                                    $path=$allocation->minutes;
+                                @endphp
+                                @if ($path && Storage::disk('public')->exists($path))
+                                <td class="cell-minutes"><a href="{{asset('storage/'.$allocation->minutes)  }}" download class="btn btn-sm btn-primary">دانلود</a></td>
+                                @else
+                                <td> فایل موجود نیست </td>
+                                @endif
+                                <td class="allocation-status">
+                                    @if($allocation->status === 'approved')
+                                        <span class="badge bg-success">تأیید شده</span>
+                                    @else
+                                        <span class="badge bg-warning text-dark">در انتظار تأیید</span>
+                                    @endif
+                                </td>
+
+
                                 <td style="min-width:160px;">
-                                    <!-- دکمه ویرایش بازکننده modal -->
-                                    {{-- <button type="button" class="btn btn-sm btn-primary btn-edit"
-                                        data-id="{{ $allocation->id }}">
-                                        ویرایش
-                                    </button> --}}
-                                    <a href="{{ route('allocations.edit', $allocation->id) }}"
-                                        class="btn btn-success">ویرایش </a>
 
+                                    {{-- حالت 1: رکورد draft --}}
+                                    @if($allocation->status === 'draft')
 
-                                    <form action="{{ route('allocations.destroy', $allocation->id) }}" method="POST"
-                                        class="delete-form d-inline" data-id="{{ $allocation->id }}">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button" class="btn btn-danger btn-sm btn-delete"
-                                            data-url="{{ route('allocations.destroy', $allocation->id) }}">
-                                            حذف
-                                        </button>
-                                    </form>
+                                        @can('create', $allocation)
+                                            <a href="{{ route('allocations.edit', $allocation->id) }}"
+                                            class="btn btn-success btn-sm">
+                                                ویرایش
+                                            </a>
+
+                                            <form action="{{ route('allocations.destroy', $allocation->id) }}"
+                                                method="POST"
+                                                class="delete-form d-inline"
+                                                data-id="{{ $allocation->id }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button"
+                                                        class="btn btn-danger btn-sm btn-delete"
+                                                        data-url="{{ route('allocations.destroy', $allocation->id) }}">
+                                                    حذف
+                                                </button>
+                                            </form>
+                                        @endcan
+
+                                    {{-- حالت 2: رکورد approved --}}
+                                    @elseif($allocation->status === 'approved')
+
+                                        @role('admin')
+                                            <a href="{{ route('allocations.edit', $allocation->id) }}"
+                                            class="btn btn-success btn-sm">
+                                                ویرایش
+                                            </a>
+
+                                            <form action="{{ route('allocations.destroy', $allocation->id) }}"
+                                                method="POST"
+                                                class="delete-form d-inline"
+                                                data-id="{{ $allocation->id }}">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="button"
+                                                        class="btn btn-danger btn-sm btn-delete"
+                                                        data-url="{{ route('allocations.destroy', $allocation->id) }}">
+                                                    حذف
+                                                </button>
+                                            </form>
+                                        @endrole
+
+                                    @endif
+
+                                </td>
+
+                                <td> 
+                                    @can('approve', $allocation)
+                                         <form action="{{ route('allocations.approve', $allocation->id) }}"
+                                            method="POST"
+                                            class="approve-form d-inline"
+                                            data-id="{{ $allocation->id }}">
+
+                                            @csrf
+                                            @method('PUT')
+
+                                            <button type="button"
+                                                    class="btn btn-success btn-sm btn-approve"
+                                                    data-url="{{ route('allocations.approve', $allocation->id) }}">
+                                                تأیید
+                                            </button>
+                                        </form>
+                                    @endcan
 
                                 </td>
                             </tr>
