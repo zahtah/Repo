@@ -107,7 +107,8 @@
         </li>
         @endrole
         <li class="nav-item menu-items">
-            <a class="nav-link" href="{{ route('dashboard') }}">
+            {{-- <a class="nav-link" href="{{ route('dashboard') }}"> --}}
+            <a class="nav-link" href="#">
                 <span class="menu-icon">
                     <i class="mdi mdi-chart-bar"></i>
                 </span>
