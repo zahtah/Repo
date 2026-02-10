@@ -267,7 +267,7 @@
                                     $path=$allocation->minutes;
                                 @endphp
                                 @if ($path && Storage::disk('public')->exists($path))
-                                <td class="cell-minutes"><a href="{{asset('storage/'.$allocation->minutes)  }}" download class="btn btn-sm btn-primary">دانلود</a></td>
+                                <td class="cell-minutes"><a href="{{route('allocations.download',$allocation->id)  }}" class="btn btn-sm btn-primary">دانلود</a></td>
                                 @else
                                 <td> فایل موجود نیست </td>
                                 @endif

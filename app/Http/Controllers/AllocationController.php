@@ -14,6 +14,7 @@ use App\Exports\AllocationsExport;
 use App\Models\FileCategory;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Storage;
 
 class AllocationController extends Controller
 {
@@ -812,7 +813,16 @@ public function approve(Allocation $allocation)
         ]);}
         
 
+public function download($id){
+    $allocation = Allocation::findOrFail($id);
+    $file=$allocation->minutes;
+    $fullPath=storage_path('app/public/'.$file);
 
+    if(!file_exists($fullPath)){
+        return abort(404,'فایل یافت نشد');
+    }
+    return response()->download($fullPath);
+}
 
 
 }

@@ -25,6 +25,7 @@
     <!-- End layout styles -->
     <link rel="shortcut icon" href="{{ asset('admin/assets/images/favicon.png') }}" />
     <link rel="stylesheet" href="{{ asset('admin/assets/css/fonts.css') }}">
+    <link rel="stylesheet" href="{{ asset('admin/assets/vendors/css/persian_datepicker.min.css')}}">
 
 
 </head>
@@ -105,8 +106,14 @@
     <script src="https://cdn.jsdelivr.net/npm/persian-date@1.1.0/dist/persian-date.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/persian-datepicker@1.2.0/dist/js/persian-datepicker.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> --}}
+    <script src="{{ asset('admin/assets/vendors/js/jquery_3.6.0.min.js')}}"></script>
+    <script src="{{ asset('admin/assets/vendors/js/persian_date.min.js')}}"></script>
+    <script src="{{ asset('admin/assets/vendors/js/persian_datepicker.min.js')}}"></script>
     <script src="{{ asset('admin/assets/vendors/js/sweetalert2@11.js')}}"></script>
-    <script src="{{ asset('admin/assets/vendors/js/jquery-3.6.0.min.js')}}"></script>
+    
+    
+        
+         
     <!-- End custom js for this page -->
 </body>
 
