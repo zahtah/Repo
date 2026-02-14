@@ -13,9 +13,9 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::table('allocations', function (Blueprint $table) {
-            $table->dropUnique('allocations_kelace_unique');
-        });
+        // Schema::table('allocations', function (Blueprint $table) {
+        //     $table->dropUnique('allocations_kelace_unique');
+        // });
     }
 
     /**
@@ -25,8 +25,8 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::table('allocations', function (Blueprint $table) {
-            $table->unique('kelace');
-        });
+        // Schema::table('allocations', function (Blueprint $table) {
+        //     $table->unique('kelace');
+        // });
     }
 };
