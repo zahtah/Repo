@@ -8,6 +8,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\UserLogController;
 use App\Models\Category;
 use App\Models\User;
 
@@ -83,7 +84,12 @@ use App\Models\User;
     Route::get(
     '/reports/file-categories/{id}/leaf-ids',
     [ReportController::class, 'leafCategoryIds']
-)->name('reports.fileCategories.leafIds');
+    )->name('reports.fileCategories.leafIds');
+
+    //UserLog
+    Route::middleware(['auth'])->group(function () {Route::get('/user-logs', [UserLogController::class, 'index'])->name('user.logs');
+});
+
 
 
     

@@ -148,12 +148,11 @@
             </div>
         </li> --}}
         <li class="nav-item menu-items">
-            <a class="nav-link"
-                href="http://www.bootstrapdash.com/demo/corona-free/jquery/documentation/documentation.html">
+            <a class="nav-link" href="{{ route('user.logs') }}">
                 <span class="menu-icon">
                     <i class="mdi mdi-file-document-box"></i>
                 </span>
-                <span class="menu-title">مستندات</span>
+                <span class="menu-title">لاگ ورود و خروج</span>
             </a>
         </li>
         <li class="nav-item menu-items">
