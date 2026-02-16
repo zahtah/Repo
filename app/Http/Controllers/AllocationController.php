@@ -12,6 +12,7 @@ use Morilog\Jalali\Jalalian;
 use Carbon\Carbon;
 use App\Exports\AllocationsExport;
 use App\Models\FileCategory;
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
@@ -19,7 +20,20 @@ use Illuminate\Support\Facades\Storage;
 class AllocationController extends Controller
 {
     public function homee(){
-        return view('admin.allocations.homee');
+        $fileNames = Allocation::select('file_name')->distinct()->pluck('file_name');
+        // 1️⃣ تعداد کل سندها (file_name یکتا)
+        $totalDocuments = Allocation::distinct('file_name')->count('file_name');
+
+        // 2️⃣ رکوردهای تایید نشده
+        $draftRecords = Allocation::where('status', 'draft')->count();
+
+        // 3️⃣ کاربران فعال
+        $totalUsers = User::count();
+        return view('admin.allocations.homee',compact(
+            'totalDocuments',
+            'draftRecords',
+            'totalUsers'
+            ));
     }
     public function import(Request $request)
     {
