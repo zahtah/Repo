@@ -6,7 +6,7 @@
         <form method="GET" class="row g-3 align-items-end">
 
             <div class="col-md-4">
-                <label class="form-label">انتخاب فایل</label>
+                <label class="form-label">انتخاب سند</label>
                 <select name="file_name" class="form-select">
                     <option value="">-- انتخاب کنید --</option>
                     @foreach($fileNames as $file)
@@ -19,7 +19,7 @@
             </div>
 
             <div class="col-md-4">
-                <label class="form-label">انتخاب کد</label>
+                <label class="form-label">انتخاب محدوده مطالعاتی</label>
                 <select name="code" class="form-select">
                     <option value="">-- انتخاب کنید --</option>
                     @foreach($codes as $code)

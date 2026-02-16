@@ -1,4 +1,4 @@
-<footer class="footer">
+<footer class="footer bg-gray-800 text-white p-6 text-center mt-auto">
     <div class="d-sm-flex justify-content-center justify-content-sm-between">
         <span class="text-muted d-block text-center text-sm-left d-sm-inline-block">Copyright ©
             ZahraTaheri 2025</span>
