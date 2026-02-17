@@ -683,11 +683,20 @@ document.addEventListener('DOMContentLoaded', function () {
                                 '<span class="badge bg-success">تأیید شده</span>';
                         }
 
-                        showSuccessToast(
-                            (data && data.message)
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'موفق',
+                            text: (data && data.message)
                                 ? data.message
-                                : 'رکورد با موفقیت تأیید شد'
-                        );
+                                : 'رکورد با موفقیت تأیید شد',
+                            confirmButtonText: 'باشه',
+                            customClass: {
+                                popup: 'swal2-rtl'
+                            }
+                        }).then(() => {
+                            location.reload();
+                        });
+
                     })
                     .catch(err => {
                         console.error(err);
