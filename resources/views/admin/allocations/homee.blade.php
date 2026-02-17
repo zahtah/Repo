@@ -3,11 +3,11 @@
     <div class="col-lg-12 grid-margin stretch-card">
         <div class="card">
             <div class="card-body">
-                <div class="d-flex justify-content-between">
+                {{-- <div class="d-flex justify-content-between">
                     <h4 class="card-title">خانه</h4>
-                    {{-- <a class="nav-link btn btn-success create-new-button" href="{{ route('createCategories') }}">+ Create New
-                        Category</a> --}}
-                </div>
+                     <a class="nav-link btn btn-success create-new-button" href="{{ route('createCategories') }}">+ Create New
+                        Category</a> 
+                </div> --}}
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                     <!-- Card 1 -->

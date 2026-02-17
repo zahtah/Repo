@@ -1,10 +1,15 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
-    <div class="sidebar-brand-wrapper d-none d-lg-flex align-items-center justify-content-center fixed-top">
-        <a class="sidebar-brand brand-logo" href="{{ route('index') }}"><img src="{{ asset('assets/images/logo-FA.jpg') }}"
-                alt="logo" /></a>
-        <a class="sidebar-brand brand-logo-mini" href="index.html"><img src="assets/images/logo-mini.svg"
-                alt="logo" /></a>
-    </div>
+    <div class="sidebar-brand-wrapper d-none d-lg-flex align-items-center justify-content-center fixed-top" style="height:80px;">
+    <a href="{{ route('index') }}" class="d-flex align-items-center justify-content-center w-100">
+        <img 
+            src="{{ asset('assets/images/WaterLogo.png') }}"
+            alt="logo"
+            class="img-fluid"
+            style="max-height:65px; width:auto;"
+        >
+    </a>
+</div>
+
     <ul class="nav">
         {{-- <li class="nav-item profile">
             <div class="profile-desc">
@@ -56,7 +61,7 @@
                 <span class="menu-icon">
                     <i class="mdi mdi-home"></i>
                 </span>
-                <span class="menu-title">خانه</span>
+                <span class="menu-title">صفحه نخست</span>
             </a>
         </li>
         @auth
