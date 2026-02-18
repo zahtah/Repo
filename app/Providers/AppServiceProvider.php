@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Maatwebsite\Excel\HeadingRowFormatter;
 use Maatwebsite\Excel\Imports\HeadingRowFormatter as ImportsHeadingRowFormatter;
+use Illuminate\Pagination\Paginator;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,5 +28,6 @@ class AppServiceProvider extends ServiceProvider
     {
         //
          ImportsHeadingRowFormatter::default('none'); // هدرها تغییر نکنند
+         Paginator::useBootstrapFive();
     }
 }
