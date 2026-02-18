@@ -684,6 +684,19 @@ public function update(Request $request, $id)
 
     $validated['baghi'] = round( ($validated['t_mosavvab'] ?? (float)$allocation->t_mosavvab) - ($validated['sum'] ?? (float)$allocation->sum), 3);
 
+    if ($request->hasFile('minutes')) {
+
+        // اگر فایل قبلی وجود دارد حذف شود (اختیاری ولی توصیه شده)
+        if ($allocation->minutes && Storage::disk('public')->exists($allocation->minutes)) {
+            Storage::disk('public')->delete($allocation->minutes);
+        }
+
+        $file = $request->file('minutes');
+        $filename = time() . '_' . $file->getClientOriginalName();
+        $minutesPath = $file->storeAs('minutes', $filename, 'public');
+
+        $validated['minutes'] = $minutesPath;
+    }
 
 
     $allocation->update($validated);

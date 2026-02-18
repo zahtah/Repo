@@ -227,6 +227,7 @@
                             <th>جمع</th>
                             <th>باقی‌مانده</th>
                             <th>شماره جلسه</th>
+                            <th>مصوبات </th>
                             <th>فایل صورت جلسه</th>
                             <th>وضعیت</th>
                             <th>عملیات</th>
@@ -263,6 +264,7 @@
                                 {{-- <td class="cell-sum">{{ number_format($allocation->cumulative_vm ?? 0, 2) }}</td> --}}
                                 <td class="cell-baghi">{{ $allocation->baghi }}</td>
                                 <td class="cell-session">{{ $allocation->session }}</td>
+                                <td class="cell-mosavabat">{{ $allocation->mosavabat }}</td>
                                 @php
                                     $path=$allocation->minutes;
                                 @endphp

@@ -21,7 +21,7 @@
             @endif
 
             {{-- فرم ایجاد رکورد --}}
-            <form action="{{ route('allocations.update', $id) }}" method="POST">
+            <form action="{{ route('allocations.update', $id) }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 @method('PUT')
                 <div class="row g-3 d-flex">

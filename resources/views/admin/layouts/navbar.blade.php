@@ -4,7 +4,7 @@
                 alt="logo" /></a>
     </div>
     <div class="navbar-menu-wrapper flex-grow d-flex align-items-stretch">
-        <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
+        {{-- <button class="navbar-toggler navbar-toggler align-self-center" type="button" data-toggle="minimize">
             <span class="mdi mdi-menu"></span>
         </button>
         <ul class="navbar-nav w-100">
@@ -13,7 +13,7 @@
                     <input type="text" class="form-control" placeholder="Search products">
                 </form>
             </li>
-        </ul>
+        </ul> --}}
         <ul class="navbar-nav navbar-nav-right">
             <li class="nav-item dropdown d-none d-lg-block">
                 @can('create', App\Models\Allocation::class)
@@ -43,8 +43,8 @@
                                 class="rounded-circle profile-pic">
                         </div>
                         <div class="preview-item-content">
-                            <p class="preview-subject ellipsis mb-1">1 پیام جدید</p>
-                            <p class="text-muted mb-0"> 1 دقیقه پیش </p>
+                            <p class="preview-subject ellipsis mb-1" dir="rtl">1 پیام جدید</p>
+                            <p class="text-muted mb-0" dir="rtl"> 1 دقیقه پیش </p>
                         </div>
                     </a>
                     
