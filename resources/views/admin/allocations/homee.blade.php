@@ -1,14 +1,30 @@
 @component('admin.layouts.content')
 @section('content')
-    <div class="col-lg-12 grid-margin stretch-card">
-        <div class="card">
-            <div class="card-body">
-                {{-- <div class="d-flex justify-content-between">
-                    <h4 class="card-title">خانه</h4>
-                     <a class="nav-link btn btn-success create-new-button" href="{{ route('createCategories') }}">+ Create New
-                        Category</a> 
-                </div> --}}
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+<div class="col-lg-12 grid-margin stretch-card">
+<div class="card">
+<div class="card-body">
+
+{{-- ===================== WELCOME SECTION ===================== --}}
+<div class="mb-6 p-6 rounded-2xl bg-white shadow-md flex justify-between items-center">
+    <div>
+        <h2 class="text-2xl font-bold text-gray-800">
+            سلام {{ auth()->user()->name }} 👋
+        </h2>
+        <p class="text-gray-500 mt-1">
+            امروز {{  \Carbon\Carbon::now()->format('Y/m/d') }}
+        </p>
+    </div>
+    <div>
+        <a href="#" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition">
+            ثبت رکورد جدید
+        </a>
+    </div>
+</div>
+
+
+{{-- ===================== MAIN KPI CARDS (همان کارت‌های شما) ===================== --}}
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
                     <!-- Card 1 -->
                     <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 p-6 text-white shadow-lg">
@@ -59,9 +75,82 @@
 
                 </div>
 
-                
-            </div>
-        </div>
+{{-- ===================== SMALL STATS ===================== --}}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+
+    <div class="bg-white p-4 rounded-xl shadow text-center">
+        <p class="text-gray-500 text-sm">تخصیص های امروز</p>
+        <h4 class="text-xl font-bold mt-2 text-black">{{ $todayDocuments }}</h4>
     </div>
-    @endsection
+
+    <div class="bg-white p-4 rounded-xl shadow text-center">
+        <p class="text-gray-500 text-sm">تخصیص های این ماه</p>
+        <h4 class="text-xl font-bold mt-2 text-black">{{ $monthDocuments }}</h4>
+    </div>
+
+    <div class="bg-white p-4 rounded-xl shadow text-center">
+        <p class="text-gray-500 text-sm">کاربران فعال</p>
+        <h4 class="text-xl font-bold mt-2 text-black" >{{ $activeUsers }}</h4>
+    </div>
+
+    <div class="bg-white p-4 rounded-xl shadow text-center">
+        <p class="text-gray-500 text-sm">تخصیص های تایید شده</p>
+        <h4 class="text-xl font-bold mt-2 text-black">{{ $approvedDocuments }}</h4>
+    </div>
+
+</div>
+
+
+{{-- ===================== CHART ===================== --}}
+<div class="mt-8 bg-white p-6 rounded-2xl shadow-md">
+    <h4 class="text-lg font-bold mb-4">آمار ثبت اسناد در ۳۰ روز اخیر</h4>
+    <canvas id="documentsChart"></canvas>
+</div>
+
+
+
+
+
+{{-- ===================== QUICK ACTIONS ===================== --}}
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+    <a href="#" class="bg-white p-4 rounded-xl shadow text-center hover:shadow-lg transition">
+        ➕ ثبت سند
+    </a>
+    <a href="#" class="bg-white p-4 rounded-xl shadow text-center hover:shadow-lg transition">
+        👤 مدیریت کاربران
+    </a>
+    <a href="#" class="bg-white p-4 rounded-xl shadow text-center hover:shadow-lg transition">
+        📊 گزارشات
+    </a>
+    <a href="#" class="bg-white p-4 rounded-xl shadow text-center hover:shadow-lg transition">
+        ⚙ تنظیمات
+    </a>
+</div>
+
+
+</div>
+</div>
+</div>
+
+
+{{-- ===================== CHART JS ===================== --}}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const ctx = document.getElementById('documentsChart');
+
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: @json($chartLabels),
+        datasets: [{
+            label: 'تعداد اسناد',
+            data: @json($chartData),
+            borderWidth: 2,
+            tension: 0.3
+        }]
+    }
+});
+</script>
+
+@endsection
 @endcomponent

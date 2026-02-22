@@ -62,6 +62,8 @@ use App\Models\User;
     Route::post('allocations/compute-t', [AllocationController::class, 'computeTMosavvab'])->name('allocations.computeTMosavvab');
     Route::get('allocations/next-row', [AllocationController::class, 'nextRow'])->name('allocations.nextRow');
     Route::get('/download/{id}', [AllocationController::class, 'download'])->name('allocations.download');
+    // Route::post('/allocations/fetch-by-kelace', [AllocationController::class, 'fetchByKelace'])->name('allocations.fetchByKelace');
+
 
     // import/export & reports
     Route::post('/allocations/import', [AllocationController::class, 'import'])->name('allocations.import');

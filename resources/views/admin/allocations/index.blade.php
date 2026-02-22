@@ -364,7 +364,7 @@
             </div>
 
             <div class="card-footer bg-light border-top py-3">
-                <div class="row align-items-center flex-row-reverse">
+                <div class="row  flex-row-reverse">
                     <!-- متن توضیح در سمت راست -->
                     <div class="col-md-6 text-muted small mb-2 mb-md-0 text-md-end text-center">
                         نمایش

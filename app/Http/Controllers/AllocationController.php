@@ -16,23 +16,50 @@ use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Document;
+
 
 class AllocationController extends Controller
 {
     public function homee(){
-        $fileNames = Allocation::select('file_name')->distinct()->pluck('file_name');
+	$fileNames = Allocation::select('file_name')->distinct()->pluck('file_name');
         // 1️⃣ تعداد کل سندها (file_name یکتا)
         $totalDocuments = Allocation::distinct('file_name')->count('file_name');
+        $totalRecords = Allocation::count();
+    $draftRecords = Allocation::where('status','draft')->count();
+    $approvedDocuments = Allocation::where('status','approved')->count();
+    $totalUsers = User::count();
 
-        // 2️⃣ رکوردهای تایید نشده
-        $draftRecords = Allocation::where('status', 'draft')->count();
+    $todayDocuments = Allocation::whereDate('created_at', today())->count();
+    $monthDocuments = Allocation::whereMonth('created_at', now()->month)->count();
+    $activeUsers = User::where('is_staff',1)->count(); // اگر فیلد active داری
 
-        // 3️⃣ کاربران فعال
-        $totalUsers = User::count();
+    // $latestDocuments = Allocation::with('user')
+    //     ->latest()
+    //     ->take(5)
+    //     ->get();
+
+    // chart
+    $chartLabels = [];
+    $chartData = [];
+
+    for ($i=29; $i>=0; $i--) {
+        $date = Carbon::today()->subDays($i);
+        $chartLabels[] = $date->format('m/d');
+        $chartData[] = Allocation::whereDate('created_at',$date)->count();
+    }
+
         return view('admin.allocations.homee',compact(
             'totalDocuments',
-            'draftRecords',
-            'totalUsers'
+        'draftRecords',
+	'totalRecords',
+        'approvedDocuments',
+        'totalUsers',
+        'todayDocuments',
+        'monthDocuments',
+        'activeUsers',
+        'chartLabels',
+        'chartData'
             ));
     }
     public function import(Request $request)
@@ -850,6 +877,42 @@ public function download($id){
     }
     return response()->download($fullPath);
 }
+// public function fetchByKelace(Request $request)
+// {
+//     $request->validate([
+//         'kelace' => 'required|string',
+//         'file_category_id' => 'required|exists:file_categories,id',
+//     ]);
+
+//     $kelace = $request->kelace;
+//     $fileCategoryId = $request->file_category_id;
+
+//     // آخرین رکورد با همان kelace و همان فایل
+//     $lastRecord = Allocation::where('kelace', $kelace)
+//         ->where('file_category_id', $fileCategoryId)
+//         ->orderByRaw('CAST(`row` AS UNSIGNED) DESC')
+//         ->first();
+
+//     if (!$lastRecord) {
+//         return response()->json([
+//             'found' => false
+//         ]);
+//     }
+
+//     // محاسبه next row فقط برای همان file_category
+//     $maxRow = Allocation::where('file_category_id', $fileCategoryId)
+//         ->max('row');
+
+//     $nextRow = $maxRow ? $maxRow + 1 : 1;
+
+//     return response()->json([
+//         'found' => true,
+//         'data' => $lastRecord,
+//         'nextRow' => $nextRow
+//     ]);
+// }
+
+
 
 
 }

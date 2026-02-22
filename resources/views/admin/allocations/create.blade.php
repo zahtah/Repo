@@ -111,6 +111,27 @@
                             required>
                     </div>
 
+                   {{-- <div class="col-md-3">
+                        <label class="form-label">کلاسه پرونده</label>
+
+                        <div class="position-relative">
+
+                            <input type="text"
+                                name="kelace"
+                                id="kelace_input"
+                                class="form-control text-end"
+                                required>
+
+                            <i class="mdi mdi-magnify position-absolute top-50 translate-middle-y start-0 ms-3 text-muted"
+                                id="search_kelace_btn"
+                                style="cursor:pointer; font-size:20px;">
+                            </i>
+
+                        </div>
+                    </div> --}}
+
+
+
                     {{-- نام متقاضی --}}
                     <div class="col-md-2">
                         <label class="form-label">نام متقاضی</label>
@@ -479,9 +500,12 @@
                     computeAndSetSum();
                     fetchNextRow();
                 });
+
+                
             </script>
-        @endpush
-        
+            
+            
+        @endpush       
         
     @endsection
 
