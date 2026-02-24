@@ -105,9 +105,9 @@
                                     <td>{{ $r->code }}</td>
                                     <td>{{ $r->Takhsis_group }}</td>
                                     <td>{{ $r->applicants_count }}</td>
-                                    <td>{{ number_format($r->total_volume * 1000) }}</td>
-                                    <td>{{ number_format($r->cost * 1000) }}</td>
-                                    <td>{{ number_format($r->remaining * 1000) }}</td>
+                                    <td>{{ number_format($r->total_volume ) }}</td>
+                                    <td>{{ number_format($r->cost ) }}</td>
+                                    <td>{{ number_format($r->remaining ) }}</td>
                                 </tr>
                             @endforeach
 
@@ -118,9 +118,9 @@
                                 <tr class="table-warning fw-bold">
                                     <td colspan="3">جمع کل همه سندها</td>
                                     <td>{{ $grandApplicants }}</td>
-                                    <td>{{ number_format($grandTotal->total_volume * 1000) }}</td>
-                                    <td>{{ number_format($grandTotal->cost * 1000) }}</td>
-                                    <td>{{ number_format($grandTotal->remaining * 1000) }}</td>
+                                    <td>{{ number_format($grandTotal->total_volume ) }}</td>
+                                    <td>{{ number_format($grandTotal->cost ) }}</td>
+                                    <td>{{ number_format($grandTotal->remaining ) }}</td>
                                 </tr>
                                 
                             @endif
