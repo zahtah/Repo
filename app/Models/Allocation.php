@@ -60,8 +60,9 @@ class Allocation extends Model
 
     public function fileCategory()
     {
-        return $this->belongsTo(FileCategory::class);
+        return $this->belongsTo(FileCategory::class, 'file_category_id');
     }
+
     
 
     public function getErjaJalaliAttribute()
@@ -123,38 +124,55 @@ class Allocation extends Model
         });
     }
     // Accessorها: وقتی از $allocation->V_m استفاده می‌کنیم، یک float بازگردانده شود
-public function getV_mAttribute($value)
-{
-    if ($value === null || $value === '') return null;
-    return (float) $value; // بازگرداندن عدد اعشاری برای محاسبات
-}
+    public function getV_mAttribute($value)
+    {
+        if ($value === null || $value === '') return null;
+        return (float) $value; // بازگرداندن عدد اعشاری برای محاسبات
+    }
 
-public function getT_mosavvabAttribute($value)
-{
-    if ($value === null || $value === '') return null;
-    return (float) $value;
-}
+    public function getT_mosavvabAttribute($value)
+    {
+        if ($value === null || $value === '') return null;
+        return (float) $value;
+    }
+    public function getTmosavvabAttribute($value)
+    {
+        if ($value === null || $value === '') return null;
+        return (float) $value;
+    }
 
-public function getSumAttribute($value)
-{
-    if ($value === null || $value === '') return null;
-    return (float) $value;
-}
+    public function getSumAttribute($value)
+    {
+        if ($value === null || $value === '') return null;
+        return (float) $value;
+    }
 
-public function getBaghiAttribute($value)
-{
-    if ($value === null || $value === '') return null;
-    return (float) $value;
-}
-public function creator()
-{
-    return $this->belongsTo(User::class, 'created_by');
-}
+    public function getBaghiAttribute($value)
+    {
+        if ($value === null || $value === '') return null;
+        return (float) $value;
+    }
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
 
-public function approver()
-{
-    return $this->belongsTo(User::class, 'approved_by');
-}
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+    public function session()
+    {
+        // پارامتر دوم نام فیلد در جدول فعلی (allocations) است
+        // پارامتر سوم نام کلید اصلی در جدول مقصد (sessions) است
+        return $this->belongsTo(Session::class, 'session', 'session_number');
+    }
+    // در فایل Allocation.php
+    public function votes()
+    {
+        return $this->hasMany(AllocationVote::class);
+    }
+
 
 }
 

@@ -57,5 +57,20 @@ class User extends Authenticatable
     {
         $this->attributes['password'] = bcrypt($value);
     }
+    public function sessions()
+    {
+        return $this->belongsToMany(Session::class, 'session_user', 'user_id', 'session_id');
+    }
+
+    public function allocations()
+    {
+        return $this->hasMany(Allocation::class, 'created_by');
+    }
+    public function allocationVotes()
+    {
+        return $this->hasMany(AllocationVote::class);
+    }
+
+
     
 }

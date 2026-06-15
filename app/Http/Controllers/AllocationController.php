@@ -11,13 +11,16 @@ use Illuminate\Support\Facades\DB;
 use Morilog\Jalali\Jalalian;
 use Carbon\Carbon;
 use App\Exports\AllocationsExport;
+use App\Models\AllocationVote;
 use App\Models\FileCategory;
 use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Document;
-
+use App\Models\Session;
+use Illuminate\Auth\Events\Validated;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx\Rels;
 
 class AllocationController extends Controller
 {
@@ -217,15 +220,6 @@ public function index(Request $request)
             ->distinct()
             ->orderBy('masraf')
             ->pluck('masraf');
-
-        // $fileNames = Allocation::select('file_name')
-        //     ->whereNotNull('file_name')
-        //     ->distinct()
-        //     ->whereNotNull('file_name')
-        //     ->orderBy('file_name')
-        //     ->pluck('file_name')
-        //     ->toArray();
-
         $fileNames = Allocation::select('file_name')->distinct()->pluck('file_name');
         $codes = Allocation::select('code')->distinct()->pluck('code');
         $takhsisGroups = Allocation::select('Takhsis_group')->distinct()->pluck('Takhsis_group');
@@ -233,8 +227,11 @@ public function index(Request $request)
         'takhsisGroups'));
     }
 
-    public function create()
+    public function create( Request $request,Session $session1)
     {
+        $sessionNumber = $request->session_number; // یا $request->session_number
+        //$session1 = $request->session1;
+        $sessionid=$session1->id;
     // گرفتن بیشترین مقدار عددی ستون row (در صورتی که row به صورت string ذخیره شده)
     $maxRow = DB::table('allocations')
         ->select(DB::raw('MAX(CAST(`row` AS UNSIGNED)) as max_row'))
@@ -287,19 +284,14 @@ public function index(Request $request)
     $fileOptions = FileCategory::whereDoesntHave('children')
         ->orderBy('name')
         ->get();
+    $users = $session1->users()->orderBy('name')->get();
 
-    return view('admin.allocations.create', compact('nextRow','darkhastOptions', 'takhsisOptions', 'shahrOptions','mantagheOptions','vahedOptions','fileOptions','codeOptions'));
+    return view('admin.allocations.create', compact('nextRow','darkhastOptions', 'takhsisOptions', 'shahrOptions','mantagheOptions','vahedOptions','fileOptions','codeOptions','sessionNumber','sessionid','session1','users'));
 }
 
 public function nextRow(Request $request)
     {
         $fileCategoryId = $request->file_category_id;
-
-        //Allocation::where('file_category_id', $fileCategoryId)
-
-
-        //$fileName = FileCategory::findOrFail($fileCategoryId)->name;
-        //$fileName = $request->query('file_name');
 
         $nextRow = Allocation::where('file_category_id', $fileCategoryId)
         ->max('row');
@@ -386,17 +378,6 @@ public function nextRow(Request $request)
         $takhsis = $request->input('Takhsis_group');
         $V_m = floatval($request->input('V_m', 0));
 
-        // مقدار قبلی V_m از دیتابیس
-        //$old_V_m = floatval($allocation->V_m);
-
-
-
-
-        // // مثال ساده: جمع تمام V_mهای موجود با همان file_name + code + Takhsis_group
-        // $sum = Allocation::when($fileName, fn($q) => $q->where('file_name', $fileName))
-        //                  ->when($code, fn($q) => $q->where('code', $code))
-        //                  ->when($takhsis, fn($q) => $q->where('Takhsis_group', $takhsis))
-        //                  ->sum('V_m');
 
         $currentRow = is_numeric($allocation->row) ? $allocation->row : intval($allocation->row);
         $sumBefore = Allocation::when($fileName, fn($q) => $q->where('file_name', $fileName))
@@ -408,10 +389,7 @@ public function nextRow(Request $request)
         //$sum = floatval($allocation->sum);
 
         $sum = $sumBefore + $V_m;
-        // جمع فعلی + مقدار ورودی جدید
-        //$sum-=$old_V_m;
-        //$sum += $V_m;
-
+        
         return response()->json(['sum' => $sum]);
     }
 
@@ -422,122 +400,135 @@ public function nextRow(Request $request)
 public function store(Request $request)
 {
     $this->authorize('create', Allocation::class);
-    // اعتبارسنجی پایه‌ای
-    $validated = $request->validate([
-        'row'           => 'nullable',
-        'Shahrestan'    => 'nullable|string|max:255',
-        'sal'           => 'nullable|integer',
-        'erja'          => 'nullable|date',
-        'code'          => 'nullable|integer',
-        'mantaghe'      => 'nullable|string|max:255',
-        'Abadi'         => 'nullable|string|max:255',
-        'kelace'        => 'nullable|string|max:255',
-        'motaghasi'     => 'nullable|string|max:255',
-        'darkhast'      => 'nullable|string|max:255',
-        'Takhsis_group' => 'nullable|string|max:255',
-        'masraf'        => 'nullable|string|max:255',
-        'comete'        => 'nullable|date',
-        'shomare'       => 'nullable|string|max:255',
-        'date_shimare'  => 'nullable|date',
-        'vahed'         => 'nullable|string|max:255',
-        'q_m'           => 'nullable|integer',
-        'V_m'           => 'nullable',
-        't_mosavvab'    => 'nullable',
-        'mosavabat'     => 'nullable|string|max:255',
-        'file_name'     => 'nullable|string|max:255',
-        'file_category_id' => 'required|exists:file_categories,id',
-        'minutes'       => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:2048',
-        'session'      => 'nullable|string|max:255',
 
+    $validated = $request->validate([
+        'row' => 'nullable',
+        'Shahrestan' => 'nullable|string|max:255',
+        'sal' => 'nullable|integer',
+        'erja' => 'nullable|date',
+        'code' => 'nullable|integer',
+        'mantaghe' => 'nullable|string|max:255',
+        'Abadi' => 'nullable|string|max:255',
+        'kelace' => 'nullable|string|max:255',
+        'motaghasi' => 'nullable|string|max:255',
+        'darkhast' => 'nullable|string|max:255',
+        'Takhsis_group' => 'nullable|string|max:255',
+        'masraf' => 'nullable|string|max:255',
+        'comete' => 'nullable|date',
+        'shomare' => 'nullable|string|max:255',
+        'date_shimare' => 'nullable|date',
+        'vahed' => 'nullable|string|max:255',
+        'q_m' => 'nullable|integer',
+        'V_m' => 'nullable',
+        't_mosavvab' => 'nullable',
+        'mosavabat' => 'nullable|string|max:255',
+        'file_name' => 'nullable|string|max:255',
+        'file_category_id' => 'required|exists:file_categories,id',
+        'minutes' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:2048',
+        'session_number' => 'nullable|string|max:255',
     ]);
 
-    // --- 1) تبدیل تاریخ شمسی و اعداد فارسی ---
+    // تبدیل تاریخ‌ها
     $dateFields = ['erja', 'comete', 'date_shimare'];
     foreach ($dateFields as $field) {
         if (!empty($validated[$field])) {
-            $val = $validated[$field];
-            // تبدیل اعداد فارسی به انگلیسی
             $val = str_replace(
                 ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'],
                 ['0','1','2','3','4','5','6','7','8','9'],
-                $val
+                $validated[$field]
             );
+
             try {
-                $validated[$field] = Jalalian::fromFormat('Y/m/d', $val)->toCarbon()->format('Y-m-d');
+                $validated[$field] = Jalalian::fromFormat('Y/m/d', $val)
+                    ->toCarbon()
+                    ->format('Y-m-d');
             } catch (\Throwable $e) {
                 $validated[$field] = Carbon::parse($val)->format('Y-m-d');
             }
         }
     }
 
-    // --- 2) helper: تبدیل اعداد فارسی/کامای هزارگان ---
-    $normalizeNumber = function($v) {
+    // نرمال‌سازی عدد
+    $normalizeNumber = function ($v) {
         if ($v === null || $v === '') return null;
-        $v = (string)trim($v);
-        $persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹','٫','،',','];
-        $english = ['0','1','2','3','4','5','6','7','8','9','.','.',''];
-        $v = str_replace($persian, $english, $v);
+        $v = str_replace(['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹','٫','،',','],
+                         ['0','1','2','3','4','5','6','7','8','9','.','.',''], $v);
         $v = preg_replace('/[^\d\.\-]/', '', $v);
         return is_numeric($v) ? (float)$v : null;
     };
 
-    $currentVm = $normalizeNumber($validated['V_m']);
-    $t_mosavvab = $normalizeNumber($validated['t_mosavvab']);
+    $currentVm = $normalizeNumber($validated['V_m'] ?? 0);
+    $t_mosavvab = $normalizeNumber($validated['t_mosavvab'] ?? 0);
 
-    // --- 3) نرمال‌سازی file_name ---
-    // $fileName = $validated['file_name'] ?? null;
-    // if ($fileName) {
-    //     $fileName = trim($fileName);
-    //     $fileName = pathinfo($fileName, PATHINFO_FILENAME);
-    // }
-    
+    $code = $validated['code'] ?? null;
+    $takhsis = $validated['Takhsis_group'] ?? null;
 
-
-    // --- 4) نرمال‌سازی code و Takhsis_group ---
-    $code = isset($validated['code']) && $validated['code'] !== '' ? $validated['code'] : null;
-    $takhsis = isset($validated['Takhsis_group']) && $validated['Takhsis_group'] !== '' ? $validated['Takhsis_group'] : null;
-    
+    $sessionid = $request->sessionid;
+    $session1 = Session::findOrFail($sessionid);
 
     try {
 
         $fileCategoryId = $validated['file_category_id'];
         $fileName = FileCategory::find($fileCategoryId)?->name;
-        $session = $validated['session'];
-       
-         $minutesPath = null;
+        $session = $validated['session_number'];
 
+        // upload file
+        $minutesPath = null;
         if ($request->hasFile('minutes')) {
             $file = $request->file('minutes');
-            $filename = time() . '_' . $file->getClientOriginalName();
+            $filename = time().'_'.$file->getClientOriginalName();
             $minutesPath = $file->storeAs('minutes', $filename, 'public');
         }
 
+        $allocation = DB::transaction(function () use (
+            $validated,
+            $fileName,
+            $currentVm,
+            $t_mosavvab,
+            $code,
+            $takhsis,
+            $minutesPath,
+            $session,
+            $request,
+            $fileCategoryId
+        ) {
 
-        $allocation = DB::transaction(function () use ($validated, $fileName, $currentVm, $t_mosavvab, $code, $takhsis,$minutesPath,$session) {
-            
-
-            $fileCategoryId = $validated['file_category_id'];
-
-            // محاسبه next row با lock
+            // 🔹 next row
             $maxRowQuery = Allocation::query();
-            $fileName !== null ? $maxRowQuery->where('file_name', $fileName) : $maxRowQuery->whereNull('file_name');
-            $maxRow = $maxRowQuery->select(DB::raw('MAX(CAST(`row` AS UNSIGNED)) as max_row'))->lockForUpdate()->value('max_row');
+            $fileName
+                ? $maxRowQuery->where('file_name', $fileName)
+                : $maxRowQuery->whereNull('file_name');
+
+            $maxRow = $maxRowQuery
+                ->select(DB::raw('MAX(CAST(`row` AS UNSIGNED)) as max_row'))
+                ->lockForUpdate()
+                ->value('max_row');
+
             $nextRow = $maxRow ? ((int)$maxRow + 1) : 1;
 
-            // محاسبه مجموع V_m قبلی
+            // 🔹 sum
             $sumQuery = Allocation::query();
-            $code !== null ? $sumQuery->where('code', $code) : $sumQuery->whereNull('code');
-            $takhsis !== null ? $sumQuery->where('Takhsis_group', $takhsis) : $sumQuery->whereNull('Takhsis_group');
-            $fileName !== null ? $sumQuery->where('file_name', $fileName) : $sumQuery->whereNull('file_name');
+
+            $code
+                ? $sumQuery->where('code', $code)
+                : $sumQuery->whereNull('code');
+
+            $takhsis
+                ? $sumQuery->where('Takhsis_group', $takhsis)
+                : $sumQuery->whereNull('Takhsis_group');
+
+            $fileName
+                ? $sumQuery->where('file_name', $fileName)
+                : $sumQuery->whereNull('file_name');
+
             $otherSum = (float) $sumQuery->lockForUpdate()->sum('V_m');
 
-            $finalSum = round(($otherSum + ($currentVm ?? 0)), 3);
-            $baghi = round(($t_mosavvab ?? 0) - $finalSum, 3);
+            $finalSum = round($otherSum + $currentVm, 3);
+            $baghi = round($t_mosavvab - $finalSum, 3);
 
-            // آماده‌سازی داده برای ایجاد رکورد
+            // 🔹 create data
             $toCreate = $validated;
             $toCreate['minutes'] = $minutesPath;
-
             $toCreate['row'] = $nextRow;
             $toCreate['file_name'] = $fileName;
             $toCreate['file_category_id'] = $fileCategoryId;
@@ -549,76 +540,113 @@ public function store(Request $request)
             $toCreate['status'] = 'draft';
             $toCreate['created_by'] = auth()->id();
 
-            return Allocation::create($toCreate);
-        }, 5); // 5 تلاش در صورت deadlock
+            // 🔥 فقط یک بار create
+            $allocation = Allocation::create($toCreate);
+
+            // 🔹 votes (فقط همینجا)
+            if ($request->filled('votes')) {
+                foreach ($request->votes as $userId => $value) {
+                    if ($value == 1) {
+                        AllocationVote::create([
+                            'allocation_id' => $allocation->id,
+                            'user_id' => $userId,
+                            'vote' => 1,
+                            'comment' => null,
+                        ]);
+                    }
+                }
+            }
+
+            return $allocation;
+        });
+
     } catch (\Throwable $e) {
-        
-        return redirect()->back()->withInput()->withErrors(['general' => 'خطا هنگام ذخیره رکورد، لطفاً لاگ را بررسی کنید.']);
+        return back()->withInput()->withErrors([
+            'general' => 'خطا هنگام ذخیره رکورد'
+        ]);
     }
 
-    return redirect()->route('allocations.index')->with('success', 'رکورد با موفقیت ایجاد شد.');
+    return redirect()
+        ->route('sessions.show', $session1)
+        ->with('success', 'رکورد با موفقیت ایجاد شد.');
 }
 
 
-public function edit($id){ 
-    $allocation = Allocation::find($id);
-    // گرفتن بیشترین مقدار عددی ستون row (در صورتی که row به صورت string ذخیره شده)
-    $maxRow = DB::table('allocations')
-        ->select(DB::raw('MAX(CAST(`row` AS UNSIGNED)) as max_row'))
-        ->value('max_row');
+public function edit($id, Session $session)
+{
+$allocation = Allocation::with('votes')->findOrFail($id);
+$sessionid = $session->id;
+$sessionNumber = $session->session_number;
 
-    $nextRow = $maxRow ? ((int)$maxRow + 1) : 1;
+$users = $session->users()
+    ->orderBy('name')
+    ->get();
 
-    // گزینه‌های شهرستان موجود در دیتابیس
-    $shahrOptions = Allocation::query()
-        ->select('Shahrestan')
-        ->distinct()
-        ->whereNotNull('Shahrestan')
-        ->pluck('Shahrestan');
+$selectedUsers = $allocation->votes
+    ->pluck('user_id')
+    ->toArray();
 
-    // گزینه‌های نوع درخواست موجود در دیتابیس
-    $darkhastOptions = Allocation::query()
-        ->select('darkhast')
-        ->distinct()
-        ->whereNotNull('darkhast')
-        ->pluck('darkhast');
+$voteComments = $allocation->votes
+    ->keyBy('user_id');
 
-    // گزینه‌های تخصیص موجود در دیتابیس
-    $takhsisOptions = Allocation::query()
-        ->select('Takhsis_group')
-        ->distinct()
-        ->whereNotNull('Takhsis_group')
-        ->pluck('Takhsis_group');
+$shahrOptions = Allocation::query()
+    ->select('Shahrestan')
+    ->distinct()
+    ->whereNotNull('Shahrestan')
+    ->pluck('Shahrestan');
 
-    // گزینه‌های منطقه موجود در دیتابیس
-    $mantagheOptions = Allocation::query()
-        ->select('mantaghe')
-        ->distinct()
-        ->whereNotNull('mantaghe')
-        ->pluck('mantaghe');
+$darkhastOptions = Allocation::query()
+    ->select('darkhast')
+    ->distinct()
+    ->whereNotNull('darkhast')
+    ->pluck('darkhast');
 
-        // گزینه‌های کد موجود در دیتابیس
-    $codeOptions = Allocation::query()
-        ->select('code')
-        ->distinct()
-        ->whereNotNull('code')
-        ->pluck('code');
+$takhsisOptions = Allocation::query()
+    ->select('Takhsis_group')
+    ->distinct()
+    ->whereNotNull('Takhsis_group')
+    ->pluck('Takhsis_group');
 
-    // گزینه‌های واحد دبی موجود در دیتابیس
-    $vahedOptions = Allocation::query()
-        ->select('vahed')
-        ->distinct()
-        ->whereNotNull('vahed')
-        ->pluck('vahed');
+$mantagheOptions = Allocation::query()
+    ->select('mantaghe')
+    ->distinct()
+    ->whereNotNull('mantaghe')
+    ->pluck('mantaghe');
 
-        $fileOptions = Allocation::query()
-        ->select('file_name')
-        ->distinct()
-        ->whereNotNull('file_name')
-        ->pluck('file_name');
+$codeOptions = Allocation::query()
+    ->select('code')
+    ->distinct()
+    ->whereNotNull('code')
+    ->pluck('code');
 
-        
-    return view('admin.allocations.edit', compact('id','darkhastOptions', 'takhsisOptions', 'shahrOptions','mantagheOptions','vahedOptions','fileOptions','codeOptions'))->with('allocation',$allocation); }
+$vahedOptions = Allocation::query()
+    ->select('vahed')
+    ->distinct()
+    ->whereNotNull('vahed')
+    ->pluck('vahed');
+
+$fileOptions = FileCategory::whereDoesntHave('children')
+    ->orderBy('name')
+    ->get();
+
+return view('admin.allocations.edit', compact(
+    'allocation',
+    'session',
+    'sessionid',
+    'sessionNumber',
+    'shahrOptions',
+    'darkhastOptions',
+    'takhsisOptions',
+    'mantagheOptions',
+    'codeOptions',
+    'vahedOptions',
+    'fileOptions',
+    'users',
+    'selectedUsers',
+    'voteComments'
+));
+
+}
 
 
 public function show(Request $request, $id)
@@ -632,113 +660,195 @@ public function show(Request $request, $id)
     }
 }
 
-
-
-public function update(Request $request, $id)
+public function update(Request $request, $id, Session $session)
 {
-    $allocation = Allocation::findOrFail($id);
+$allocation = Allocation::findOrFail($id);
 
-    $validated = $request->validate([
-        'row' => [
-         'required',
-         Rule::unique('allocations')->where(function ($q) use ($request) {
-             return $q->where('file_name', $request->input('file_name'));
-         })->ignore($allocation->id)
-        ],
-        'Shahrestan'    => 'nullable|string|max:255',
-        'sal'           => 'nullable|integer',
-        'erja'          => 'nullable|string', // ممکن است میلادی یا شمسی؛ تبدیل پایین انجام می‌شود
-        'code'          => 'nullable|integer',
-        'mantaghe'      => 'nullable|string|max:255',
-        'Abadi'         => 'nullable|string|max:255',
-        'kelace'        => 'nullable|string|max:255',
-        'motaghasi'     => 'nullable|string|max:255',
-        'darkhast'      => 'nullable|string|max:255',
-        'Takhsis_group' => 'nullable|string|max:255',
-        'masraf'        => 'nullable|string|max:255',
-        'comete'        => 'nullable|string',
-        'shomare'       => 'nullable|string|max:255',
-        'date_shimare'  => 'nullable|string',
-        'vahed'         => 'nullable|string|max:255',
-        'q_m'           => 'nullable|integer',
-        'V_m'           => 'numeric|nullable',
-        'sum'           => 'numeric|nullable',
-        't_mosavvab'    => 'numeric|nullable',
-        //'baghi'         => 'numeric|nullable',
-        'mosavabat'     => 'nullable|string|max:255',
-        'minutes'       => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:2048',
-        'session'      => 'nullable|string|max:255',
-    ]);
 
-    // helper: تبدیل اعداد فارسی به انگلیسی
-    $persian = ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
-    $english = ['0','1','2','3','4','5','6','7','8','9'];
+$validated = $request->validate([
+    'row' => 'nullable',
+    'Shahrestan' => 'nullable|string|max:255',
+    'sal' => 'nullable|integer',
+    'erja' => 'nullable',
+    'code' => 'nullable|integer',
+    'mantaghe' => 'nullable|string|max:255',
+    'Abadi' => 'nullable|string|max:255',
+    'kelace' => 'nullable|string|max:255',
+    'motaghasi' => 'nullable|string|max:255',
+    'darkhast' => 'nullable|string|max:255',
+    'Takhsis_group' => 'nullable|string|max:255',
+    'masraf' => 'nullable|string|max:255',
+    'comete' => 'nullable',
+    'shomare' => 'nullable|string|max:255',
+    'date_shimare' => 'nullable',
+    'vahed' => 'nullable|string|max:255',
+    'q_m' => 'nullable|integer',
+    'V_m' => 'nullable',
+    't_mosavvab' => 'nullable',
+    'mosavabat' => 'nullable|string|max:255',
+    'file_category_id' => 'required|exists:file_categories,id',
+    'minutes' => 'nullable|file|mimes:pdf,jpg,jpeg,png,doc,docx|max:2048',
+    'session_number' => 'nullable|string|max:255',
+]);
 
-    $dateFields = ['erja', 'comete', 'date_shimare'];
-    foreach ($dateFields as $f) {
-        if (!empty($validated[$f])) {
-            $val = str_replace($persian, $english, $validated[$f]);
+$dateFields = ['erja', 'comete', 'date_shimare'];
 
-            // اگر ورودی فرمت YYYY/MM/DD شمسی باشد، سعی کن به میلادی تبدیل کنی
-            try {
-                // اگر سال >= 1300 -> شمسی
-                if (preg_match('/^\d{4}\/\d{1,2}\/\d{1,2}$/', $val) && (int)explode('/',$val)[0] >= 1300) {
-                    $validated[$f] = Jalalian::fromFormat('Y/m/d', $val)->toCarbon()->format('Y-m-d');
-                } else {
-                    // تلاش با Carbon
-                    $validated[$f] = Carbon::parse($val)->format('Y-m-d');
+foreach ($dateFields as $field) {
+
+    if (!empty($validated[$field])) {
+
+        $val = str_replace(
+            ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'],
+            ['0','1','2','3','4','5','6','7','8','9'],
+            $validated[$field]
+        );
+
+        try {
+
+            $validated[$field] = Jalalian::fromFormat('Y/m/d', $val)
+                ->toCarbon()
+                ->format('Y-m-d');
+
+        } catch (\Throwable $e) {
+
+            $validated[$field] = Carbon::parse($val)
+                ->format('Y-m-d');
+        }
+    }
+}
+
+$normalizeNumber = function ($v) {
+
+    if ($v === null || $v === '') {
+        return null;
+    }
+
+    $v = str_replace(
+        ['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹','٫','،',','],
+        ['0','1','2','3','4','5','6','7','8','9','.','.',''],
+        $v
+    );
+
+    $v = preg_replace('/[^\d\.\-]/', '', $v);
+
+    return is_numeric($v) ? (float)$v : null;
+};
+
+$currentVm = $normalizeNumber($validated['V_m'] ?? 0);
+$t_mosavvab = $normalizeNumber($validated['t_mosavvab'] ?? 0);
+
+try {
+
+    DB::transaction(function () use (
+        $allocation,
+        $validated,
+        $request,
+        $currentVm,
+        $t_mosavvab
+    ) {
+
+        $fileCategoryId = $validated['file_category_id'];
+
+        $fileName = FileCategory::find($fileCategoryId)?->name;
+
+        $minutesPath = $allocation->minutes;
+
+        if ($request->hasFile('minutes')) {
+
+            $file = $request->file('minutes');
+
+            $filename = time().'_'.$file->getClientOriginalName();
+
+            $minutesPath = $file->storeAs(
+                'minutes',
+                $filename,
+                'public'
+            );
+        }
+
+        $sumQuery = Allocation::query()
+            ->where('id', '!=', $allocation->id);
+
+        if (!empty($validated['code'])) {
+            $sumQuery->where('code', $validated['code']);
+        }
+
+        if (!empty($validated['Takhsis_group'])) {
+            $sumQuery->where(
+                'Takhsis_group',
+                $validated['Takhsis_group']
+            );
+        }
+
+        if ($fileName) {
+            $sumQuery->where('file_name', $fileName);
+        }
+
+        $otherSum = (float) $sumQuery->sum('V_m');
+
+        $finalSum = round(
+            $otherSum + ($currentVm ?? 0),
+            3
+        );
+
+        $baghi = round(
+            ($t_mosavvab ?? 0) - $finalSum,
+            3
+        );
+
+        $allocation->update([
+
+            ...$validated,
+
+            'minutes' => $minutesPath,
+            'file_name' => $fileName,
+
+            'V_m' => $currentVm,
+            't_mosavvab' => $t_mosavvab,
+
+            'sum' => $finalSum,
+            'baghi' => $baghi,
+
+            'status' => 'draft',
+
+            'updated_by' => auth()->id(),
+        ]);
+
+        $allocation->votes()->delete();
+
+        if ($request->filled('votes')) {
+
+            foreach ($request->votes as $userId => $value) {
+
+                if ($value == 1) {
+
+                    AllocationVote::create([
+                        'allocation_id' => $allocation->id,
+                        'user_id' => $userId,
+                        'vote' => 1,
+                        'comment' => null,
+                    ]);
                 }
-            } catch (\Throwable $e) {
-                // اگر تبدیل نشد، پاکش کن
-                $validated[$f] = null;
             }
         }
-    }
+    });
 
-    // $t = isset($validated['t_mosavvab']) ? (float)$validated['t_mosavvab'] : (float)$allocation->t_mosavvab;
-    // $s = isset($validated['sum']) ? (float)$validated['sum'] : (float)$allocation->sum;
-    // $validated['baghi'] = round($t - $s, 3);
+} catch (\Throwable $e) {
 
-    $normalize = function($v) {
-    if ($v === null || $v === '') return null;
-    $v = str_replace(['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹','٫','،',','], ['0','1','2','3','4','5','6','7','8','9','.','.',''], $v);
-    return is_numeric($v) ? (float)$v : null;
-    };
-
-    $validated['V_m'] = $normalize($validated['V_m']);
-    $validated['t_mosavvab'] = $normalize($validated['t_mosavvab']);
-    $validated['sum'] = $normalize($validated['sum']);
-
-    $validated['baghi'] = round( ($validated['t_mosavvab'] ?? (float)$allocation->t_mosavvab) - ($validated['sum'] ?? (float)$allocation->sum), 3);
-
-    if ($request->hasFile('minutes')) {
-
-        // اگر فایل قبلی وجود دارد حذف شود (اختیاری ولی توصیه شده)
-        if ($allocation->minutes && Storage::disk('public')->exists($allocation->minutes)) {
-            Storage::disk('public')->delete($allocation->minutes);
-        }
-
-        $file = $request->file('minutes');
-        $filename = time() . '_' . $file->getClientOriginalName();
-        $minutesPath = $file->storeAs('minutes', $filename, 'public');
-
-        $validated['minutes'] = $minutesPath;
-    }
-
-
-    $allocation->update($validated);
-
-    // پاسخ JSON برای AJAX
-    if ($request->wantsJson() || $request->ajax()) {
-        return response()->json([
-            'success' => true,
-            'message' => 'تغییرات با موفقیت ذخیره شد',
-            'data' => $allocation->fresh()
-        ], 200);
-    }
-
-    return redirect()->route('allocations.index')->with('success', 'تغییرات ذخیره شد');
+    return back()
+        ->withInput()
+        ->withErrors([
+            'general' => $e->getMessage()
+        ]);
 }
+
+return redirect()
+    ->route('sessions.show', $session)
+    ->with('success', 'رکورد با موفقیت ویرایش شد و مجدداً در انتظار تایید قرار گرفت.');
+
+
+}
+
 
 public function filterOptions(Request $request)
 {
@@ -877,42 +987,37 @@ public function download($id){
     }
     return response()->download($fullPath);
 }
-// public function fetchByKelace(Request $request)
-// {
-//     $request->validate([
-//         'kelace' => 'required|string',
-//         'file_category_id' => 'required|exists:file_categories,id',
-//     ]);
 
-//     $kelace = $request->kelace;
-//     $fileCategoryId = $request->file_category_id;
+public function voteStore(Request $request)
+{
+    // 1. گرفتن آرایه votes از فرم
+    $votes = $request->input('votes', []);
 
-//     // آخرین رکورد با همان kelace و همان فایل
-//     $lastRecord = Allocation::where('kelace', $kelace)
-//         ->where('file_category_id', $fileCategoryId)
-//         ->orderByRaw('CAST(`row` AS UNSIGNED) DESC')
-//         ->first();
+    if (empty($votes)) {
+        return back()->with('error', 'هیچ رأیی انتخاب نشده است!');
+    }
 
-//     if (!$lastRecord) {
-//         return response()->json([
-//             'found' => false
-//         ]);
-//     }
+    // 2. حذف رأی‌های قبلی از session (اگر چندبار فرم ارسال شود)
+    session()->forget('allocation_votes_temp');
 
-//     // محاسبه next row فقط برای همان file_category
-//     $maxRow = Allocation::where('file_category_id', $fileCategoryId)
-//         ->max('row');
+    // 3. برای هر کاربر تیک خورده یک رکورد vote بساز (در حالت Session)
+    $vote_records = [];
 
-//     $nextRow = $maxRow ? $maxRow + 1 : 1;
+    foreach ($votes as $userId => $value) {
+        $vote_records[] = [
+            'user_id' => $userId,
+            'vote' => 1, // چون تیک یعنی موافق
+            'comment' => null,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ];
+    }
 
-//     return response()->json([
-//         'found' => true,
-//         'data' => $lastRecord,
-//         'nextRow' => $nextRow
-//     ]);
-// }
+    // 4. ذخیره موقت در session تا بعداً هنگام ساخت allocation استفاده کنیم
+    session(['allocation_votes_temp' => $vote_records]);
 
-
+    return back()->with('success', 'رأی‌ها با موفقیت ثبت شدند. حالا می‌توانید اطلاعات تخصیص را وارد و ثبت نهایی کنید.');
+}
 
 
 }

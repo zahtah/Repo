@@ -2,7 +2,7 @@
 
     @section('content')
         <div class="container" dir="rtl">
-            <h1 class="mb-4 text-end">ایجاد رکورد جدید تخصیص</h1>
+            <h1 class="mb-4 mt-4 text-end">ایجاد رکورد جدید تخصیص</h1>
 
             {{-- نمایش پیام موفقیت --}}
             @if (session('success'))
@@ -19,6 +19,31 @@
                     </ul>
                 </div>
             @endif
+
+            {{-- <div class="mt-4 col-md-3 float-right" dir="rtl">
+                <form action="{{ route('allocation_votes.store') }}" method="POST">
+                    @csrf
+
+                    <h4>موافقان تخصیص را انتخاب کنید</h4>
+
+                    @foreach($users as $user)
+                        <div class="form-check mb-2">
+                            <input type="checkbox"
+                                name="votes[{{ $user->id }}]"
+                                id="vote_{{ $user->id }}"
+                                value="1"
+                                class="form-check-input">
+                            <label for="vote_{{ $user->id }}" class="form-check-label">
+                                {{ $user->name }}{{ "(موافق)" }}
+                            </label>
+                        </div>
+                    @endforeach
+
+                    <button type="submit" class="btn btn-warning mt-3">
+                        ثبت رأی‌ها (نظرات)
+                    </button>
+                </form>
+            </div> --}}
 
             {{-- فرم ایجاد رکورد --}}
             <form action="{{ route('allocations.store') }}" method="POST" enctype="multipart/form-data">
@@ -78,7 +103,7 @@
                     <div class="col-md-2">
                         <label class="form-label">تاریخ ارجاع</label>
                         <input type="text" id="erja_picker" class="form-control text-end" value="{{ old('erja') }}"
-                            placeholder="۱۴۰۳/۰۱/۰۱">
+                            placeholder="{{ \Morilog\Jalali\Jalalian::now()->format('Y/m/d') }}">
                         <input type="hidden" name="erja" id="erja" value="{{ old('erja') }}">
                     </div>
 
@@ -174,7 +199,7 @@
                     <div class="col-md-2">
                         <label class="form-label">تاریخ تشکیل کمیته</label>
                         <input type="text" id="comete_picker" class="form-control text-end" value="{{ old('comete') }}"
-                            placeholder="۱۴۰۳/۰۱/۰۱">
+                            placeholder="{{ \Morilog\Jalali\Jalalian::now()->format('Y/m/d') }}">
                         <input type="hidden" name="comete" id="comete" value="{{ old('comete') }}">
                     </div>
 
@@ -188,14 +213,17 @@
                     <div class="col-md-2">
                         <label class="form-label">تاریخ مصوبه</label>
                         <input type="text" id="date_shimare_picker" class="form-control text-end"
-                            value="{{ old('date_shimare') }}" placeholder="۱۴۰۳/۰۱/۰۱">
+                            value="{{ old('date_shimare') }}" placeholder="{{ \Morilog\Jalali\Jalalian::now()->format('Y/m/d') }}">
                         <input type="hidden" name="date_shimare" id="date_shimare" value="{{ old('date_shimare') }}">
                     </div>
                     {{-- شماره جلسه  --}}
                     <div class="col-md-2">
                         <label class="form-label">شماره جلسه</label>
-                        <input type="text" name="session" class="form-control text-end" value="{{ old('session') }}">
+                        {{-- <input type="text" name="session" class="form-control text-end" value="{{ old('session') }}"> --}}
+                        <input type="text" name="session_number" value="{{ $session1->session_number ?? old('session_number') }}"  class="form-control">
+
                     </div>
+                    <input type="hidden" name="sessionid" value="{{ $session1->id ?? old('sessionid') }}"  class="form-control">
 
                     {{-- واحد دبی
                     <div class="col-md-2">
@@ -260,13 +288,32 @@
                     </div>
 
                 </div>
+                <div class="row mb-3">
+                 <h4>موافقان تخصیص را انتخاب کنید</h4>
+
+                    @foreach($users as $user)
+                        <div class="form-check mb-2">
+                            <input type="checkbox"
+                                name="votes[{{ $user->id }}]"
+                                id="vote_{{ $user->id }}"
+                                value="1"
+                                class="form-check-input">
+                            <label for="vote_{{ $user->id }}" class="form-check-label">
+                                {{ $user->name }}{{ "(موافق)" }}
+                            </label>
+                        </div>
+                    @endforeach
+                </div>
+                
 
                 <div class="mt-3 text-end">
-                    <button type="submit" class="btn btn-success">ذخیره رکورد</button>
-                    <a href="{{ route('allocations.index') }}" class="btn btn-secondary">بازگشت</a>
+                    <button type="submit" class="btn btn-success">ثبت نهایی </button>
+                    <a href="{{ route('sessions.show',$session1) }}" class="btn btn-secondary">بازگشت</a>
                 </div>
             </form>
         </div>
+        {{-- بخش رأی‌دهی کاربران --}}
+        
         <link rel="stylesheet" href="{{ asset('admin/assets/vendors/css/persian_datepicker.min.css')}}">
         {{-- === CDN های مورد نیاز برای datepicker شمسی === --}}
         {{-- <link rel="stylesheet"

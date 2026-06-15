@@ -11,15 +11,15 @@
                 </div>
 
                 <div class="d-flex flex-column flex-md-row gap-2">
-                    @can('create', App\Models\Allocation::class)
+                    {{-- @can('create', App\Models\Allocation::class)
                         <a href="{{ route('allocations.create') }}" class="btn btn-success">ثبت جدید</a>
-                    @endcan
+                    @endcan --}}
 
                     {{-- <a href="{{ route('allocations.export') }}" class="btn btn-outline-primary"> خروجی Excel </a> --}}
                     @role('admin')
                         <!-- دکمه باز کردن modal -->
                         <button class="btn btn-outline-secondary" data-bs-toggle="modal" data-bs-target="#importModal">
-                            وارد کردن از Excel
+                            وارد کردن دیتا از Excel
                         </button>
                     @endrole
                 </div>
@@ -58,30 +58,6 @@
             </div>
         </div>
 
-
-        {{-- کد محدوده مطالعاتی --}}
-        <div class="col-md-2">
-            <label class="form-label fw-bold">کد محدوده</label>
-            <div class="border rounded p-2 filter-box">
-                <div class="form-check text-end">
-                    <input class="form-check-input select-all" type="checkbox"
-                        data-target="code">
-                    <label class="form-check-label fw-bold">همه</label>
-                </div>
-                <hr class="my-1">
-
-                @foreach ($codes as $c)
-                    <div class="form-check text-end">
-                        <input class="form-check-input code-item"
-                            type="checkbox"
-                            name="code[]"
-                            value="{{ $c }}"
-                            {{ in_array($c, (array)request('code')) ? 'checked' : '' }}>
-                        <label class="form-check-label">{{ $c }}</label>
-                    </div>
-                @endforeach
-            </div>
-        </div>
 
 
         {{-- گروه تخصیص --}}
@@ -122,7 +98,7 @@
         </div> -->
 
         {{-- شهرستان --}}
-        <div class="col-md-2">
+        {{-- <div class="col-md-2">
             <label class="form-label fw-bold">شهرستان </label>
             <div class="border rounded p-2 filter-box">
                 <div class="form-check text-end">
@@ -143,10 +119,10 @@
                     </div>
                 @endforeach
             </div>
-        </div>
+        </div> --}}
 
         {{-- نوع مصرف --}}
-        <div class="col-md-2">
+        {{-- <div class="col-md-2">
             <label class="form-label fw-bold">نوع مصرف</label>
             <div class="border rounded p-2 filter-box">
                 <div class="form-check text-end">
@@ -167,9 +143,31 @@
                     </div>
                 @endforeach
             </div>
+        </div> --}}
+
+        {{-- کد محدوده مطالعاتی --}}
+        <div class="col-md-2">
+            <label class="form-label fw-bold">کد محدوده</label>
+            <div class="border rounded p-2 filter-box">
+                <div class="form-check text-end">
+                    <input class="form-check-input select-all" type="checkbox"
+                        data-target="code">
+                    <label class="form-check-label fw-bold">همه</label>
+                </div>
+                <hr class="my-1">
+
+                @foreach ($codes as $c)
+                    <div class="form-check text-end">
+                        <input class="form-check-input code-item"
+                            type="checkbox"
+                            name="code[]"
+                            value="{{ $c }}"
+                            {{ in_array($c, (array)request('code')) ? 'checked' : '' }}>
+                        <label class="form-check-label">{{ $c }}</label>
+                    </div>
+                @endforeach
+            </div>
         </div>
-
-
         {{-- کلاسه (متنی) --}}
         <div class="col-md-1">
             <label class="form-label">کلاسه</label>
@@ -230,8 +228,8 @@
                             <th>مصوبات </th>
                             <th>فایل صورت جلسه</th>
                             <th>وضعیت</th>
-                            <th>عملیات</th>
-                            <th> تایید نهایی</th>
+                            {{-- <th>عملیات</th> --}}
+                            {{-- <th> تایید نهایی</th> --}}
                         </tr>
                     </thead>
                     <tbody class="align-middle text-center allocation-table">
@@ -282,9 +280,9 @@
                                 </td>
 
 
-                                <td style="min-width:160px;">
+                                {{-- <td style="min-width:160px;">
 
-                                    {{-- حالت 1: رکورد draft --}}
+                                    {{-- حالت 1: رکورد draft 
                                     @if($allocation->status === 'draft')
 
                                         @can('create', $allocation)
@@ -307,7 +305,7 @@
                                             </form>
                                         @endcan
 
-                                    {{-- حالت 2: رکورد approved --}}
+                                    {{-- حالت 2: رکورد approved 
                                     @elseif($allocation->status === 'approved')
 
                                         @role('admin')
@@ -332,9 +330,9 @@
 
                                     @endif
 
-                                </td>
+                                </td> --}}
 
-                                <td> 
+                                {{-- <td> 
                                     @can('approve', $allocation)
                                          <form action="{{ route('allocations.approve', $allocation->id) }}"
                                             method="POST"
@@ -352,7 +350,7 @@
                                         </form>
                                     @endcan
 
-                                </td>
+                                </td> --}}
                             </tr>
                         @empty
                             <tr>

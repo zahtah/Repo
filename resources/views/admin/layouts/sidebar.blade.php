@@ -94,13 +94,21 @@
             </div> --}}
         </li>
         <li class="nav-item menu-items">
+            <a class="nav-link" href="{{ route('sessions.index') }}">
+                <span class="menu-icon">
+                    <i class="mdi mdi-playlist-play"></i>
+                </span>
+                <span class="menu-title">جلسات  </span>
+            </a>
+        </li>
+        {{-- <li class="nav-item menu-items">
             <a class="nav-link" href="{{ route('all-categories') }}">
                 <span class="menu-icon">
                     <i class="mdi mdi-playlist-play"></i>
                 </span>
                 <span class="menu-title">دسته بندی ها</span>
             </a>
-        </li>
+        </li> --}}
         @role('admin')
         <li class="nav-item menu-items">
             <a class="nav-link" href="{{ route('all-users') }}">

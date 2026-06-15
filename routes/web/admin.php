@@ -8,6 +8,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\ReportController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\SessionController;
 use App\Http\Controllers\UserLogController;
 use App\Models\Category;
 use App\Models\User;
@@ -45,13 +46,13 @@ use App\Models\User;
     //َAllocations
     Route::get('homee', [AllocationController::class, 'homee'])->name('allocations.homee');
     Route::get('allocations', [AllocationController::class,'index'])->name('allocations.index');
-    Route::get('allocations/create', [AllocationController::class,'create'])->name('allocations.create');
+    Route::get('allocations/{session1}/create', [AllocationController::class,'create'])->name('allocations.create');
     Route::post('allocations', [AllocationController::class,'store'])->name('allocations.store');
     
     Route::get('allocations/{id}/data', [AllocationController::class, 'show'])->name('allocations.show'); // برای fetch JSON
     // Route::middleware(['auth', 'role:admin'])->group(function () {
-    Route::get('allocations/{allocation}/edit', [AllocationController::class,'edit'])->name('allocations.edit');
-    Route::put('allocations/{id}', [AllocationController::class, 'update'])->name('allocations.update'); // آپدیت (AJAX)
+    Route::get('allocations/{allocation}/{session}/edit', [AllocationController::class,'edit'])->name('allocations.edit');
+    Route::put('allocations/{id}/{session}', [AllocationController::class, 'update'])->name('allocations.update'); // آپدیت (AJAX)
     Route::delete('/allocations/{id}', [AllocationController::class, 'destroy'])->name('allocations.destroy');
     // });
     Route::put('/allocations/{allocation}/approve',[AllocationController::class, 'approve'])->name('allocations.approve') ->middleware('auth');
@@ -90,6 +91,15 @@ use App\Models\User;
 
     //UserLog
     Route::middleware(['auth'])->group(function () {Route::get('/user-logs', [UserLogController::class, 'index'])->name('user.logs');
+
+    //ُSessions
+    Route::middleware(['auth'])->group(function () {
+    Route::resource('sessions', SessionController::class);
+    });
+    Route::get('/sessions/{session}', [SessionController::class, 'show'])->name('sessions.show');
+    Route::post('/allocation-votes', [AllocationController::class, 'voteStore'])->name('allocation_votes.store');
+    Route::post('/sessions/{session}/final-approve-report', [SessionController::class, 'finalApproveAndReport'])->name('sessions.finalApproveReport');
+
 });
 
 

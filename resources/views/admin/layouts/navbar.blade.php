@@ -17,9 +17,10 @@
         <ul class="navbar-nav navbar-nav-right">
             <li class="nav-item dropdown d-none d-lg-block">
                 @can('create', App\Models\Allocation::class)
-                    <a class="nav-link btn btn-success create-new-button" id=""
+                    {{-- <a class="nav-link btn btn-success create-new-button" id=""
                         aria-expanded="false" href="{{ route('allocations.create') }}">ثبت رکورد
-                        جدید</a>
+                        جدید</a> --}}
+                        <a class="nav-link btn btn-success create-new-button" href="{{ route('sessions.create') }}"> تشکیل جلسه </a>
                 @endcan
             </li>
             <li class="nav-item nav-settings d-none d-lg-block">
