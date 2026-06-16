@@ -52,17 +52,38 @@ class AllocationController extends Controller
         $chartData[] = Allocation::whereDate('created_at',$date)->count();
     }
 
+    $sessionStats = Session::select(
+        'sessions.session_number',
+        'sessions.date',
+        DB::raw('COUNT(allocations.id) as items_count')
+    )
+    ->leftJoin(
+        'allocations',
+        'allocations.session',
+        '=',
+        'sessions.session_number'
+    )
+    ->groupBy(
+        'sessions.id',
+        'sessions.session_number',
+        'sessions.date'
+    )
+    ->orderByDesc('sessions.date')
+    ->take(10)
+    ->get();
+
         return view('admin.allocations.homee',compact(
             'totalDocuments',
         'draftRecords',
-	'totalRecords',
+	    'totalRecords',
         'approvedDocuments',
         'totalUsers',
         'todayDocuments',
         'monthDocuments',
         'activeUsers',
         'chartLabels',
-        'chartData'
+        'chartData',
+        'sessionStats'
             ));
     }
     public function import(Request $request)
@@ -1019,5 +1040,90 @@ public function voteStore(Request $request)
     return back()->with('success', 'رأی‌ها با موفقیت ثبت شدند. حالا می‌توانید اطلاعات تخصیص را وارد و ثبت نهایی کنید.');
 }
 
+public function allocationChart($id = null)
+{
+    $categories = $id
+        ? FileCategory::where('parent_id', $id)->get()
+        : FileCategory::whereNull('parent_id')->get();
 
+    $result = [];
+
+    foreach ($categories as $category) {
+
+        $leafIds = $this->getLeafIds($category);
+
+        // برای هر file_name + Takhsis_group + code
+        // فقط بزرگترین sum در نظر گرفته شود
+        $value = Allocation::whereIn('file_category_id', $leafIds)
+            ->select(
+                'file_name',
+                'Takhsis_group',
+                'code',
+                DB::raw('MAX(`sum`) as max_sum')
+            )
+            ->groupBy(
+                'file_name',
+                'Takhsis_group',
+                'code'
+            )
+            ->get()
+            ->sum('max_sum');
+
+        $result[] = [
+            'id' => $category->id,
+            'name' => $category->name,
+            'value' => round($value, 3),
+            'is_leaf' => $category->children()->count() == 0,
+        ];
+    }
+
+    /*
+     * اگر هیچ فرزندی نداشت (برگ بود)
+     * نمودار بر اساس گروه تخصیص نمایش داده شود
+     */
+    if ($id && empty($result)) {
+
+        $groups = Allocation::where('file_category_id', $id)
+            ->select(
+                'Takhsis_group',
+                'file_name',
+                'code',
+                DB::raw('MAX(`sum`) as max_sum')
+            )
+            ->groupBy(
+                'Takhsis_group',
+                'file_name',
+                'code'
+            )
+            ->get()
+            ->groupBy('Takhsis_group');
+
+        foreach ($groups as $takhsisGroup => $items) {
+
+            $result[] = [
+                'id' => null,
+                'name' => $takhsisGroup,
+                'value' => round($items->sum('max_sum'), 3),
+                'is_leaf' => true,
+            ];
+        }
+    }
+
+    return response()->json($result);
+}
+
+private function getLeafIds($category)
+{
+    if ($category->children()->count() == 0) {
+        return [$category->id];
+    }
+
+    $ids = [];
+
+    foreach ($category->children as $child) {
+        $ids = array_merge($ids, $this->getLeafIds($child));
+    }
+
+    return $ids;
+}
 }

@@ -330,4 +330,5 @@ class SessionController extends Controller
         @include('admin.allocations.scripts');
     }
     
+    
 }

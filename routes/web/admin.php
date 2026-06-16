@@ -88,7 +88,8 @@ use App\Models\User;
     '/reports/file-categories/{id}/leaf-ids',
     [ReportController::class, 'leafCategoryIds']
     )->name('reports.fileCategories.leafIds');
-
+Route::get('/allocation-chart/{id?}', [AllocationController::class, 'allocationChart'])
+    ->name('allocation.chart');
     //UserLog
     Route::middleware(['auth'])->group(function () {Route::get('/user-logs', [UserLogController::class, 'index'])->name('user.logs');
 

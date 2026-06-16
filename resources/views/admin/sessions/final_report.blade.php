@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صورت‌جلسه نهایی - جلسه شماره {{ $session_data['id'] }}</title>
+    <title>صورت‌جلسه نهایی - جلسه شماره {{ $session_data['session_number'] }}</title>
 
     <style>
         body {
@@ -290,7 +290,7 @@
                     صورت‌جلسه شماره {{ $session_data['session_number'] }}
                     کمیته مدیریت منابع آب شرکت
                     در سال
-                    {{ explode('/', $session_data['date'])[0] }}
+                    {{ (int) explode('/', $session_data['date'])[0] }}
                 </h1>
             </td>
 

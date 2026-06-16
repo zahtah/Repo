@@ -282,17 +282,19 @@
 
                     </div>
                     {{-- فایل صورت جلسه --}}
-                    <div class="col-md-2 float-left">
+                    {{-- <div class="col-md-2 float-left">
                         <label class="form-label">فایل صورت‌جلسه</label>
                         <input type="file" name="minutes" class="form-control" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx">
-                    </div>
+                    </div> --}}
 
                 </div>
-                <div class="row mb-3">
-                 <h4>موافقان تخصیص را انتخاب کنید</h4>
+                <div></div>
+                <div class="row mb-3 mt-3 border-b hover:bg-gray-50 bg-gray-100 relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-500 p-6 text-white shadow-lg">
+                
+                 <h4>موافقان تخصیص </h4>
 
                     @foreach($users as $user)
-                        <div class="form-check mb-2">
+                        <div class=" mb-2">
                             <input type="checkbox"
                                 name="votes[{{ $user->id }}]"
                                 id="vote_{{ $user->id }}"

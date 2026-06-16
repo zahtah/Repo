@@ -6,7 +6,7 @@
 <div class="card-body">
 
 {{-- ===================== WELCOME SECTION ===================== --}}
-<div class="mb-6 p-6 rounded-2xl bg-white shadow-md flex justify-between items-center">
+{{-- <div class="mb-6 p-6 rounded-2xl bg-white shadow-md flex justify-between items-center">
     <div>
         <h2 class="text-2xl font-bold text-gray-800">
             سلام {{ auth()->user()->name }} 👋
@@ -20,7 +20,7 @@
             ثبت رکورد جدید
         </a>
     </div>
-</div>
+</div> --}}
 
 
 {{-- ===================== MAIN KPI CARDS (همان کارت‌های شما) ===================== --}}
@@ -76,7 +76,7 @@
                 </div>
 
 {{-- ===================== SMALL STATS ===================== --}}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+{{-- <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
 
     <div class="bg-white p-4 rounded-xl shadow text-center">
         <p class="text-gray-500 text-sm">تخصیص های امروز</p>
@@ -98,21 +98,77 @@
         <h4 class="text-xl font-bold mt-2 text-black">{{ $approvedDocuments }}</h4>
     </div>
 
-</div>
+</div> --}}
 
 
 {{-- ===================== CHART ===================== --}}
-<div class="mt-8 bg-white p-6 rounded-2xl shadow-md">
-    <h4 class="text-lg font-bold mb-4">آمار ثبت اسناد در ۳۰ روز اخیر</h4>
+{{-- <div class="mt-8 bg-white p-6 rounded-2xl shadow-md">
+    <h4 class="text-lg font-bold mb-4 text-black">آمار ثبت اسناد در ۳۰ روز اخیر</h4>
     <canvas id="documentsChart"></canvas>
+</div> --}}
+
+
+<div class="mt-8 bg-white p-6 rounded-2xl shadow-md">
+    <h4 class="text-lg font-bold mb-4 text-black">آخرین جلسات برگزار شده</h4>
+
+    <div class="overflow-x-auto ">
+        <table class="min-w-full table-auto ">
+            <thead>
+                <tr class="bg-gray-100 relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-500 p-6 text-white shadow-lg">
+                    <th class="px-4 py-2 text-center">شماره جلسه</th>
+                    <th class="px-4 py-2 text-center">تاریخ تشکیل</th>
+                    <th class="px-4 py-2 text-center">تعداد بندها</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @forelse($sessionStats as $session)
+    <tr class="border-b hover:bg-gray-50 bg-gray-100 relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-500 p-6 text-white shadow-lg">
+        <td class="px-4 py-2 text-center">
+            {{ $session->session_number }}
+        </td>
+
+        <td class="px-4 py-2 text-center">
+            {{ $session->date}}
+        </td>
+
+        <td class="px-4 py-2 text-center">
+            {{ number_format($session->items_count) }}
+        </td>
+    </tr>
+@empty
+    <tr>
+        <td colspan="3" class="text-center py-4">
+            جلسه‌ای ثبت نشده است.
+        </td>
+    </tr>
+@endforelse
+            </tbody>
+        </table>
+    </div>
 </div>
 
 
+
+<div class="mt-8 bg-white p-6 rounded-2xl shadow-md">
+    <div class="flex justify-between items-center mb-4">
+        <h4 id="allocationChartTitle" class="text-lg font-bold text-black">
+            توزیع تخصیص‌ها بر اساس دسته‌بندی اسناد
+        </h4>
+
+        <button id="backBtn"
+                class=" relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 p-1 text-white shadow-lg">
+            بازگشت
+        </button>
+    </div>
+
+    <div id="allocationPieChart"></div>
+</div>
 
 
 
 {{-- ===================== QUICK ACTIONS ===================== --}}
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+{{-- <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
     <a href="#" class="bg-white p-4 rounded-xl shadow text-center hover:shadow-lg transition">
         ➕ ثبت سند
     </a>
@@ -125,7 +181,7 @@
     <a href="#" class="bg-white p-4 rounded-xl shadow text-center hover:shadow-lg transition">
         ⚙ تنظیمات
     </a>
-</div>
+</div> --}}
 
 
 </div>
@@ -135,6 +191,7 @@
 
 {{-- ===================== CHART JS ===================== --}}
 {{-- <script src="https://cdn.jsdelivr.net/npm/chart.js"></script> --}}
+<script src="{{ asset('admin/assets/vendors/js/chart.js')}}"></script>
 <script>
 const ctx = document.getElementById('documentsChart');
 
@@ -150,6 +207,140 @@ new Chart(ctx, {
         }]
     }
 });
+</script>
+<script src="{{ asset('admin/assets/vendors/js/apexcharts.js')}}"></script>
+
+<script>
+let chart = null;
+let historyStack = [];
+
+async function loadAllocationChart(categoryId = null, title = null) {
+
+    let url = "{{ route('allocation.chart') }}";
+
+    if (categoryId !== null) {
+        url += "/" + categoryId;
+    }
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.length === 0) {
+        return;
+    }
+
+    const labels = data.map(item => item.name);
+    const series = data.map(item => Number(item.value));
+
+    const ids = data.map(item => item.id);
+    const isLeaf = data.map(item => item.is_leaf);
+
+    if (chart) {
+        chart.destroy();
+    }
+
+    const options = {
+        chart: {
+            type: 'pie',
+            height: 450,
+
+            events: {
+                dataPointSelection: function(event, chartContext, config) {
+
+                    const index = config.dataPointIndex;
+
+                    if (index === -1) {
+                        return;
+                    }
+
+                    const id = ids[index];
+
+                    if (id === null) {
+                        return;
+                    }
+
+                    historyStack.push({
+                        id: categoryId,
+                        title: document.getElementById('allocationChartTitle').innerText
+                    });
+
+                    document.getElementById('backBtn').classList.remove('hidden');
+
+                    loadAllocationChart(id, labels[index]);
+                }
+            }
+        },
+
+        labels: labels,
+
+        series: series,
+
+        legend: {
+            position: 'bottom'
+        },
+
+        tooltip: {
+            y: {
+                formatter: function(value) {
+                    return value.toLocaleString();
+                }
+            }
+        },
+
+        dataLabels: {
+            enabled: true,
+
+            formatter: function(val, opts) {
+
+                const value = opts.w.config.series[opts.seriesIndex];
+
+                return (
+                    opts.w.globals.labels[opts.seriesIndex] +
+                    "\n" +
+                    val.toFixed(1) +
+                    "%\n" +
+                    value.toLocaleString()
+                );
+            }
+        },
+
+        noData: {
+            text: 'داده‌ای یافت نشد'
+        }
+    };
+
+    chart = new ApexCharts(
+        document.querySelector("#allocationPieChart"),
+        options
+    );
+
+    chart.render();
+
+    if (title) {
+        document.getElementById('allocationChartTitle').innerText =
+            "توزیع تخصیص‌ها - " + title;
+    } else {
+        document.getElementById('allocationChartTitle').innerText =
+            "توزیع تخصیص‌ها بر اساس دسته‌بندی اسناد";
+    }
+}
+
+document.getElementById('backBtn').addEventListener('click', function() {
+
+    if (historyStack.length === 0) {
+        return;
+    }
+
+    const previous = historyStack.pop();
+
+    loadAllocationChart(previous.id, previous.title);
+
+    if (historyStack.length === 0) {
+        this.classList.add('hidden');
+    }
+});
+
+loadAllocationChart();
 </script>
 
 @endsection
