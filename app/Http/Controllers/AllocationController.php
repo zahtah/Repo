@@ -225,6 +225,14 @@ public function index(Request $request)
     $rowsQuery = $base->select('allocations.*')
         ->leftJoinSub($fileSums, 'fs', DB::raw("IFNULL(allocations.file_name, '__NO_FILE__')"), '=', 'fs.fn')
         ->addSelect('fs.file_sum as file_sum');
+    $perFileRows = Allocation::query()
+    ->selectRaw('file_name, code, Takhsis_group,
+                 COUNT(*) as applicants_count,
+                 SUM(t_mosavvab) as total_volume,
+                 SUM(V_m) as cost,
+                 (SUM(t_mosavvab) - SUM(V_m)) as remaining')
+    ->groupBy('file_name', 'code', 'Takhsis_group')
+    ->get();
 
     // pagination و اجرای نهایی
     $rows = $rowsQuery->orderBy('created_at','desc')->paginate(25)->withQueryString();
@@ -245,7 +253,7 @@ public function index(Request $request)
         $codes = Allocation::select('code')->distinct()->pluck('code');
         $takhsisGroups = Allocation::select('Takhsis_group')->distinct()->pluck('Takhsis_group');
         return view('admin.allocations.index', compact('rows','allocations', 'shahrestans','takhsis','code', 'masrafs','session','fileNames','fileFilter','codes',
-        'takhsisGroups'));
+        'takhsisGroups','perFileRows'));
     }
 
     public function create( Request $request,Session $session1)

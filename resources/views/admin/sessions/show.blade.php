@@ -25,7 +25,7 @@
 
                         <button type="submit"
                                 class="btn btn-success"
-                                onclick="return confirm('آیا از تایید نهایی این جلسه و تولید گزارش اطمینان دارید؟');">
+                                onclick="return submitAndRefresh();">
                             تایید نهایی جلسه و دریافت صورتجلسه
                         </button>
                     </form>
@@ -214,6 +214,7 @@
                 <p>تخصیصی برای این جلسه ثبت نشده است.</p>
             @endif
         </div>
+        @if ($session->allocations->count() > 0 && $session->allocations->contains('status', 'draft'))
         @can('create', App\Models\Allocation::class)
         <div class="d-flex flex-column flex-md-row gap-2">
             @php
@@ -221,7 +222,16 @@
             @endphp
         <a href="{{ route('allocations.create', $session1 ) }}" class="btn btn-primary">ثبت تخصیص جدید</a>
         @endcan
+        @else
+        @role('admin')
+        <div class="d-flex flex-column flex-md-row gap-2">
+            @php
+                $session1=$session;
+            @endphp
+        <a href="{{ route('allocations.create', $session1 ) }}" class="btn btn-primary">ثبت تخصیص جدید</a>
         </div>
+        @endrole
+        @endif
     </div>
 </div>
 @include('admin.allocations.scripts')
@@ -283,6 +293,20 @@
             });
         });
     });
+    </script>
+    <script>
+    function submitAndRefresh() {
+
+        if (!confirm('آیا از تایید نهایی این جلسه و تولید گزارش اطمینان دارید؟')) {
+            return false;
+        }
+
+        setTimeout(function () {
+            window.location.reload();
+        }, 1000);
+
+        return true;
+    }
     </script>
     @endpush
 

@@ -1,168 +1,391 @@
 @component('admin.layouts.content')
 @section('content')
 
+<style>
+
+body{
+    background:#f5f7fb;
+}
+
+.dashboard-header{
+    background:#fff;
+    border-radius:24px;
+    padding:30px;
+    box-shadow:0 5px 25px rgba(0,0,0,.05);
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:25px;
+}
+
+.dashboard-title{
+    font-size:28px;
+    font-weight:700;
+    color:#0f172a;
+}
+
+.dashboard-subtitle{
+    color:#64748b;
+    margin-top:8px;
+}
+
+.kpi-card{
+    background:#ffffff;
+    border-radius:20px;
+    padding:24px;
+    box-shadow:0 5px 20px rgba(0,0,0,.05);
+    display:flex;
+    align-items:center;
+    gap:18px;
+    height:100%;
+    transition:.3s;
+}
+
+.kpi-card:hover{
+    transform:translateY(-5px);
+}
+
+.kpi-icon{
+    width:65px;
+    height:65px;
+    border-radius:18px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:28px;
+}
+
+.kpi-blue{
+    background:#e0ecff;
+    color:#2563eb;
+}
+
+.kpi-red{
+    background:#fee2e2;
+    color:#dc2626;
+}
+
+.kpi-green{
+    background:#dcfce7;
+    color:#16a34a;
+}
+
+.kpi-orange{
+    background:#ffedd5;
+    color:#ea580c;
+}
+
+.kpi-title{
+    font-size:14px;
+    color:#64748b;
+}
+
+.kpi-value{
+    font-size:32px;
+    font-weight:700;
+    color:#0f172a;
+}
+
+.analytics-card{
+    background:#fff;
+    border-radius:24px;
+    padding:24px;
+    box-shadow:0 5px 20px rgba(0,0,0,.05);
+    height:100%;
+}
+
+.card-title-custom{
+    font-size:18px;
+    font-weight:700;
+    color:#0f172a;
+    margin-bottom:20px;
+}
+
+.system-status{
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    color:#fff;
+    border-radius:24px;
+    padding:25px;
+    box-shadow:0 10px 25px rgba(15,23,42,.15);
+    height:100%;
+}
+
+.status-row{
+    display:flex;
+    justify-content:space-between;
+    padding:12px 0;
+    border-bottom:1px solid rgba(255,255,255,.1);
+}
+
+.status-row:last-child{
+    border:none;
+}
+
+.session-table thead{
+    background:#0f172a;
+    color:#fff;
+}
+
+.session-table{
+    border-radius:12px;
+    overflow:hidden;
+}
+
+.session-table tbody tr:hover{
+    background:#f8fafc;
+}
+
+.action-btn{
+    background:#2563eb;
+    color:#fff;
+    padding:10px 20px;
+    border-radius:12px;
+    text-decoration:none;
+    transition:.3s;
+}
+
+.action-btn:hover{
+    color:#fff;
+    background:#1d4ed8;
+}
+
+</style>
+
 <div class="col-lg-12 grid-margin stretch-card">
 <div class="card">
 <div class="card-body">
 
-{{-- ===================== WELCOME SECTION ===================== --}}
-{{-- <div class="mb-6 p-6 rounded-2xl bg-white shadow-md flex justify-between items-center">
-    <div>
-        <h2 class="text-2xl font-bold text-gray-800">
-            سلام {{ auth()->user()->name }} 👋
-        </h2>
-        <p class="text-gray-500 mt-1">
-            امروز {{  \Carbon\Carbon::now()->format('Y/m/d') }}
-        </p>
+<div class="card-body">
+
+    <!-- HEADER -->
+
+    <div class="dashboard-header">
+
+        <div>
+            <div class="dashboard-title">
+                سامانه مدیریت تخصیص منابع آب
+            </div>
+
+            <div class="dashboard-subtitle">
+                نمای مدیریتی وضعیت اسناد، جلسات و تخصیص‌های ثبت شده
+            </div>
+        </div>
+
+        <div class="text-end">
+
+            <div class="mb-3">
+                <span class="badge bg-success p-2">
+                    سیستم فعال
+                </span>
+            </div>
+
+            <div class="text-muted">
+                {{ \Morilog\Jalali\Jalalian::now()->format('Y/m/d') }}
+            </div>
+
+        </div>
+
     </div>
-    <div>
-        <a href="#" class="bg-blue-600 text-white px-4 py-2 rounded-lg shadow hover:bg-blue-700 transition">
-            ثبت رکورد جدید
-        </a>
+
+
+    <!-- KPI -->
+
+    <div class="row g-4">
+
+        <div class="col-lg-3">
+
+            <div class="kpi-card">
+
+                <div class="kpi-icon kpi-blue">
+                    📄
+                </div>
+
+                <div>
+                    <div class="kpi-title">
+                        کل اسناد
+                    </div>
+
+                    <div class="kpi-value">
+                        {{ number_format($totalDocuments) }}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3">
+
+            <div class="kpi-card">
+
+                <div class="kpi-icon kpi-red">
+                    ⚠️
+                </div>
+
+                <div>
+                    <div class="kpi-title">
+                        تایید نشده
+                    </div>
+
+                    <div class="kpi-value">
+                        {{ number_format($draftRecords) }}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3">
+
+            <div class="kpi-card">
+
+                <div class="kpi-icon kpi-green">
+                    👥
+                </div>
+
+                <div>
+                    <div class="kpi-title">
+                        کاربران
+                    </div>
+
+                    <div class="kpi-value">
+                        {{ number_format($totalUsers) }}
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="col-lg-3">
+
+            <div class="system-status">
+
+                <h5 class="mb-4">
+                    وضعیت سیستم
+                </h5>
+
+                <div class="status-row">
+                    <span>اسناد تایید شده</span>
+                    <strong>{{ $approvedDocuments }}</strong>
+                </div>
+
+                <div class="status-row">
+                    <span>جلسات برگزار شده</span>
+                    <strong>{{ count($sessionStats) }}</strong>
+                </div>
+
+                <div class="status-row">
+                    <span>کاربران فعال</span>
+                    <strong>{{ $activeUsers }}</strong>
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
-</div> --}}
 
 
-{{-- ===================== MAIN KPI CARDS (همان کارت‌های شما) ===================== --}}
-<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- CHART + TABLE -->
 
-                    <!-- Card 1 -->
-                    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 p-6 text-white shadow-lg">
-                        <div class="absolute right-4 top-4 opacity-20">
-                            <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M7 2h8l5 5v15H4V2h3z"/>
-                            </svg>
-                        </div>
+    <div class="row mt-4">
 
-                        <p class="text-sm opacity-80">تعداد کل سندها</p>
-                        <h3 class="text-4xl font-extrabold mt-3 tracking-tight">
-                            {{ number_format($totalDocuments) }}
-                        </h3>
-                        <p class="text-xs mt-2 opacity-70">بر اساس فایل‌های ثبت‌شده</p>
-                    </div>
+        <div class="col-lg-7">
 
+            <div class="analytics-card">
 
-                    <!-- Card 2 -->
-                    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-red-600 to-red-500 p-6 text-white shadow-lg">
-                        <div class="absolute right-4 top-4 opacity-20">
-                            <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M12 9v2m0 4h.01M5 19h14l-7-14-7 14z"/>
-                            </svg>
-                        </div>
+                <div class="d-flex justify-content-between align-items-center">
 
-                        <p class="text-sm opacity-80">رکوردهای تایید نشده</p>
-                        <h3 class="text-4xl font-extrabold mt-3 tracking-tight">
-                            {{ number_format($draftRecords) }}
-                        </h3>
-                        <p class="text-xs mt-2 opacity-70">نیازمند بررسی</p>
-                    </div>
+                    <h5 id="allocationChartTitle" class="card-title-custom">
+                        توزیع تخصیص‌ها بر اساس دسته‌بندی اسناد
+                    </h5>
 
-
-                    <!-- Card 3 -->
-                    <div class="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-500 p-6 text-white shadow-lg">
-                        <div class="absolute right-4 top-4 opacity-20">
-                            <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M17 20h5v-2a4 4 0 00-5-3.87M9 20H4v-2a4 4 0 015-3.87M12 12a4 4 0 100-8 4 4 0 000 8z"/>
-                            </svg>
-                        </div>
-
-                        <p class="text-sm opacity-80">کل کاربران سیستم</p>
-                        <h3 class="text-4xl font-extrabold mt-3 tracking-tight">
-                            {{ number_format($totalUsers) }}
-                        </h3>
-                        <p class="text-xs mt-2 opacity-70">کاربران ثبت‌شده</p>
-                    </div>
+                    <button id="backBtn" class="btn btn-primary btn-sm">
+                        بازگشت
+                    </button>
 
                 </div>
 
-{{-- ===================== SMALL STATS ===================== --}}
-{{-- <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-8">
+                <div id="allocationPieChart"></div>
 
-    <div class="bg-white p-4 rounded-xl shadow text-center">
-        <p class="text-gray-500 text-sm">تخصیص های امروز</p>
-        <h4 class="text-xl font-bold mt-2 text-black">{{ $todayDocuments }}</h4>
+            </div>
+
+        </div>
+
+        <div class="col-lg-5">
+
+            <div class="analytics-card">
+
+                <h5 class="card-title-custom">
+                    آخرین جلسات برگزار شده
+                </h5>
+
+                <div class="table-responsive">
+
+                    <table class="table session-table">
+
+                        <thead>
+
+                        <tr>
+                            <th class="text-center">
+                                شماره جلسه
+                            </th>
+
+                            <th class="text-center">
+                                تاریخ
+                            </th>
+
+                            <th class="text-center">
+                                تعداد بندها
+                            </th>
+                        </tr>
+
+                        </thead>
+
+                        <tbody>
+
+                        @forelse($sessionStats as $session)
+
+                            <tr>
+
+                                <td class="text-center">
+                                    {{ $session->session_number }}
+                                </td>
+
+                                <td class="text-center">
+                                    {{ $session->date }}
+                                </td>
+
+                                <td class="text-center">
+                                    {{ number_format($session->items_count) }}
+                                </td>
+
+                            </tr>
+
+                        @empty
+
+                            <tr>
+                                <td colspan="3" class="text-center">
+                                    جلسه‌ای ثبت نشده است
+                                </td>
+                            </tr>
+
+                        @endforelse
+
+                        </tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </div>
+
     </div>
 
-    <div class="bg-white p-4 rounded-xl shadow text-center">
-        <p class="text-gray-500 text-sm">تخصیص های این ماه</p>
-        <h4 class="text-xl font-bold mt-2 text-black">{{ $monthDocuments }}</h4>
-    </div>
-
-    <div class="bg-white p-4 rounded-xl shadow text-center">
-        <p class="text-gray-500 text-sm">کاربران فعال</p>
-        <h4 class="text-xl font-bold mt-2 text-black" >{{ $activeUsers }}</h4>
-    </div>
-
-    <div class="bg-white p-4 rounded-xl shadow text-center">
-        <p class="text-gray-500 text-sm">تخصیص های تایید شده</p>
-        <h4 class="text-xl font-bold mt-2 text-black">{{ $approvedDocuments }}</h4>
-    </div>
-
-</div> --}}
-
-
-{{-- ===================== CHART ===================== --}}
-{{-- <div class="mt-8 bg-white p-6 rounded-2xl shadow-md">
-    <h4 class="text-lg font-bold mb-4 text-black">آمار ثبت اسناد در ۳۰ روز اخیر</h4>
-    <canvas id="documentsChart"></canvas>
-</div> --}}
-
-
-<div class="mt-8 bg-white p-6 rounded-2xl shadow-md">
-    <h4 class="text-lg font-bold mb-4 text-black">آخرین جلسات برگزار شده</h4>
-
-    <div class="overflow-x-auto ">
-        <table class="min-w-full table-auto ">
-            <thead>
-                <tr class="bg-gray-100 relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-500 p-6 text-white shadow-lg">
-                    <th class="px-4 py-2 text-center">شماره جلسه</th>
-                    <th class="px-4 py-2 text-center">تاریخ تشکیل</th>
-                    <th class="px-4 py-2 text-center">تعداد بندها</th>
-                </tr>
-            </thead>
-
-            <tbody>
-                @forelse($sessionStats as $session)
-    <tr class="border-b hover:bg-gray-50 bg-gray-100 relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 to-emerald-500 p-6 text-white shadow-lg">
-        <td class="px-4 py-2 text-center">
-            {{ $session->session_number }}
-        </td>
-
-        <td class="px-4 py-2 text-center">
-            {{ $session->date}}
-        </td>
-
-        <td class="px-4 py-2 text-center">
-            {{ number_format($session->items_count) }}
-        </td>
-    </tr>
-@empty
-    <tr>
-        <td colspan="3" class="text-center py-4">
-            جلسه‌ای ثبت نشده است.
-        </td>
-    </tr>
-@endforelse
-            </tbody>
-        </table>
-    </div>
-</div>
-
-
-
-<div class="mt-8 bg-white p-6 rounded-2xl shadow-md">
-    <div class="flex justify-between items-center mb-4">
-        <h4 id="allocationChartTitle" class="text-lg font-bold text-black">
-            توزیع تخصیص‌ها بر اساس دسته‌بندی اسناد
-        </h4>
-
-        <button id="backBtn"
-                class=" relative overflow-hidden rounded-2xl bg-gradient-to-br from-blue-600 to-blue-500 p-1 text-white shadow-lg">
-            بازگشت
-        </button>
-    </div>
-
-    <div id="allocationPieChart"></div>
 </div>
 
 

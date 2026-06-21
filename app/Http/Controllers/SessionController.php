@@ -8,6 +8,9 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB; // For transactions
 use Illuminate\Support\Facades\Auth; // If you need to track who approved
+use Illuminate\Support\Facades\Storage;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Models\Allocation;
 
 class SessionController extends Controller
 {
@@ -28,7 +31,7 @@ class SessionController extends Controller
     public function create()
     {
         // همه کاربران برای انتخاب اعضای جلسه
-        $users = User::orderBy('name')->get(); // اگر فیلد name نداری، بگو عوضش کنیم
+        $users = User::orderBy('id')->get(); // اگر فیلد name نداری، بگو عوضش کنیم
 
         return view('admin.sessions.create', compact('users'));
     }
@@ -252,7 +255,7 @@ class SessionController extends Controller
         1602 => 'رباط قره بيل ـ دانيال نبي',
         4101 => 'درياچه نمك',
         4134 => 'ورامين',
-        4701 => 'دشت کویر',
+        4701 => 'کویر مرکزی',
         4702 => 'كوير سمنان',
         4703 => 'سرخه',
         4704 => 'سمنان',
@@ -308,6 +311,33 @@ class SessionController extends Controller
                     'approved_allocations' => $approvedAllocations,
                 ];
             }
+
+
+            $html = view('admin.sessions.final_report', [
+                'session_data' => $session->toArray(),
+                'usersReport'  => $usersReport,
+            ])->render();
+
+            $filename =
+                'minutes_' .
+                $session->session_number .
+                '_' .
+                time() .
+                '.html';
+
+            Storage::disk('public')->put(
+                'minutes/'.$filename,
+                $html
+            );
+
+            $minutesPath = 'minutes/'.$filename;
+
+            Allocation::whereIn(
+                'id',
+                $session->allocations->pluck('id')
+            )->update([
+                'minutes' => $minutesPath,
+            ]);
                                        
             // 5. بازگرداندن View گزارش با داده‌های جلسه
             // فرض بر این است که فایل view شما در resources/views/sessions/final_report.blade.php قرار دارد
